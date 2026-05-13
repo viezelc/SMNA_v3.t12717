@@ -1,106 +1,81 @@
 #!/bin/bash
 #-------------------------------------------------------------------#
-#  CPTEC Global Model – Run Script                                  #
+# CPTEC Global Model Script
 #-------------------------------------------------------------------#
 #BOP
-#  !DESCRIPTION:
-#      Driver script for the CPTEC global atmospheric model.  
-#      Handles resource requests (MPI/OpenMP), forecast window, physics
-#      options, restart management and machine‑specific tweaks.
+# !DESCRIPTION: Script to run the CPTEC global model on different HPC systems.
 #
-#  !CALLING SEQUENCE:
+# !CALLING SEQUENCE:
 #      ./runModel <options>
 #
-#  !OPTIONS – grouped by theme
-#  ────────────────────────────────────────────────────────────────────────────
-#  ◉ Model grid / resolution
-#      -t  | --truncation     <val>   Spectral truncation (T)         [default: 62]
-#      -l  | --levels         <val>   Vertical levels                 [default: 28]
-#      -p  | --prefix         <str>   Run/BAM file prefix             [default: CPT]
+#         Valid options:
+#            * -t   <val> : truncation [default: 62]
+#            * -l   <val> : number of levels [default: 28]
+#            * -mts <val> : model timestep [default: 300s for TQ299L064]
+#            * -py   <val> : BAM file prefix for input files [default: SMT]
+#            * -px   <val> : BAM file prefix for output files [default: CPT]
+#            * -np  <val> : number of processors [default: 80]
+#            * -N   <val> : number of nodes [default: 40]
+#            * -d   <val> : number of Threads per MPI task [default: 1]
+#            * -I   <val> : Initial condition date (cold start)
+#            * -F   <val> : Final forecast date 
+#            * -W   <val> : Initial condition date (warm start)
+#            * -i   <val> : Initialization type [default: 2]
+#            * -s   <val> : SST file [default: sstwkl]
+#            * -sm  <val> : Soil moisture file [default: soilmwkl]
+#            * -ts  <val> : Forecast TimeStep [default: 6]
+#            * -r   <val> : Generate Restart Files [default: .FALSE.]
+#            * -tr  <val> : Restart TimeStep [default: 6]
+#            * -u         : Enable Unified Physics [default: .FALSE.]
+#            * -slagr     : Enable Semi-Lagrangian run [default: .FALSE.]
+#            * -rrst      : Remove Restart files [default: .FALSE.]
+#            * -rnm       : Remove Normal Mode file if it exists [default: .FALSE.]
+#            * -rgaus     : Remove Gaussian file if it exists [default: .FALSE.]
+#            * -rmw       : Remove Mwaves file if it exists [default: .FALSE.]
+#            * -das       : Use specific configuration for data assimilation [default: no]
 #
-#  ◉ Calendar / forecast window
-#      -I  | --icold          <yyyymmddhh>  Cold‑start initial date
-#      -W  | --iwarm          <yyyymmddhh>  Warm‑start initial date
-#      -F  | --final          <yyyymmddhh>  Final forecast date
-#      -ts | --tstep          <h>           Forecast output timestep (h)  [default: 6]
+#  example:
 #
-#  ◉ Parallel resources (MPI × OpenMP)
-#      -np | --ntasks         <val>   MPI ranks (tasks)               [default: 80]
-#      -d  | --cpus-per-task  <val>   Threads per MPI task            [default: 1]
-#      -N  | --nodes          <val>   Compute nodes requested         [default: 40]
-#      -c  | --cores-per-node <val>   Override cores per node
-#      -P  | --procs          <val>   Total cores (derive -np/-N)
+#     ./runModel -t 62 -l 28 -I 2013010100 -F 2013010118
 #
-#  ◉ Physics & external fields
-#      -s  | --sst-file       <key>   SST dataset (see REMARKS)       [default: sstwkl]
-#      -sm | --soil-file      <key>   Soil‑moisture dataset           [default: soilmwkl]
-#      -u  | --unified                Enable Unified Physics suite    [default: .FALSE.]
-#      -slagr | --semi-lag            Enable Semi‑Lagrangian core     [default: .FALSE.]
-#      -das | --assim                 Use data‑assimilation namelist  [default: .FALSE.]
+#     ./runModel -t 299 -l 64 -np 800 -N 4 -d 10 -I 2020061900 -F 2020062100 -ts 6
 #
-#  ◉ Restart control
-#      -r  | --gen-restart            Generate restart files        [default: .FALSE.]
-#      -tr | --rst-tstep      <h>     Restart dump timestep         [default: 6]
-#      -rrst | --rm-restart           Remove existing restart files [default: .FALSE.]
-#      -rnm  | --rm-nmodes            Remove Normal‑Mode file       [default: .FALSE.]
-#      -rgaus | --rm-gauss            Remove Gaussian‑grid file     [default: .FALSE.]
-#      -rmw  | --rm-mwaves            Remove Mwaves file            [default: .FALSE.]
+# !REVISION HISTORY:
+#    22-11-2016 - de Mattos, J.G.Z - Initial code
+#    21-05-2021 - de Mattos, J.G.Z - Change parse options, use shift intrinsic
+#    22-11-2023 - Aravequia, J. A. - Changes to use it on EGEON cluster                      
+#    19-05-2025 - Bastarz, C. F.   - Fix the model timestep value
 #
-#  ◉ Initialization type  
-#      ‑i | --init-type  – default † = 2  
 #
-#  ◉ Scheduler
-#      -pw | --walltime     <HH:MM:SS>  Wall‑clock limit
-#      -pq | --queue        <name>      Queue/partition
-#      -pn | --job-name     <name>      Job name in scheduler
+# !REMARKS:
+#    Initialization types available through <-i> option:
 #
-#  ◉ Misc
-#      -v  | --verbose                   Verbose output
-#      -D  | --dry-run   (alias -dryrun) Parse only, no execution
-#      -h  | --help                      Display this block & exit
+#       *  2 diabatic normal mode initialization (Cold Start)  
+#       *  1 diabatic with no normal mode initialization (Cold Start)  
+#       *  0 adiabatic with no normal mode initialization (Warm Start)  
+#       * -1 diabatic with no normal mode initialization (Cold Start)  
+#            with Surface variables read in instead of initialized  
+#       * -2 diabatic normal mode initialization  
+#            (Atmos.,Conv.,Rad,Cloud -> Cold Start) (Surface -> Warm Start)  
+#            with Surface variables read in instead of initialized  
+#       * -3 diabatic normal mode initialization  
+#            (Atmos. -> Cold Start) (Conv.,Rad,Cloud,Surface -> Warm Start)  
 #
-#  !EXAMPLES:
-#      # T62 18‑h forecast, cold start
-#      ./runModel -t 62 -l 28 -I 2013010100 -F 2013010118
+#    Os arquivos para SST, passados por meio da opção <-s> são:
+#      
+#       * sstaoi - Optimum Interpolation SST  Climatology 
+#       * sstanp - Optimum Interpolation SST Climatology 
+#                  plus presisted SST anomaly
+#       * sstwkl - Weekly run mean of SST for the week 
+#                  finished at initial day minus one
+#       * sstwkd - weekly run mean of SST direct access file
+#       * sstmtd - monthly run mean of SST direct access file
+#       * sstdyd - daily run mean of SST direct access file
 #
-#      # Hybrid run: 480 cores total = 120 MPI × 4 threads
-#      ./runModel -t 299 -l 64 -P 480 -d 4 -I 2020061900 -F 2020062100
+# !BUGS:
 #
-#  !REVISION HISTORY:
-#      22‑Nov‑2016  J.G.Z. de Mattos – Initial version
-#      21‑May‑2021  J.G.Z. de Mattos – Shift‑based option parser
-#      22‑Nov‑2023  J.A. Aravequia   – EGEON cluster adaptation
-#      02‑May‑2025  J.G.Z. de Mattos – Header clarifications & aliases
-#                                      • Short‑form flags (-np, -d, -N) kept for backward compatibility
-#                                      • Added long‑form aliases (--ntasks, --cpus‑per‑task, --nodes) for readability
-#                                      • Options now grouped by functional category
 #
-#  !REMARKS:
-#      ▸ **SST file keys** for ‑s|--sst-file  
-#          sstaoi  – OI SST climatology  
-#          sstanp  – OI SST climatology + persisted anomaly  
-#          sstwkl† – Weekly running‑mean SST (init‑day – 1)  
-#          sstwkd  – Weekly running‑mean SST (direct‑access)  
-#          sstmtd  – Monthly running‑mean SST (direct‑access)  
-#          sstdyd  – Daily running‑mean SST (direct‑access)  
 #
-#      ▸ Flags ‑np/‑d/‑N map 1‑to‑1 to SLURM’s --ntasks / --cpus‑per‑task /
-#        --nodes. Use ‑P when you prefer to specify **total** cores and let
-#        the script derive a balanced MPI×OpenMP layout.
-#
-#      ▸ Use -P when you think in terms of “total cores” and let the script derive
-#        the appropriate hybrid layout.
-#
-#      ▸ Initialization types (‑i) and SST file keywords are detailed
-#        below for quick reference.
-#
-#        •   2  Cold start, diabatic, **with** Normal‑Mode Init (NMI)  
-#        •   1  Cold start, diabatic, **no** NMI  
-#        •   0  Warm start (restart), adiabatic  
-#        •  -1  Cold start; surface fields read from file, no NMI  
-#        •  -2  Cold start (atmosphere); Conv/Rad/Cloud/Surface from restart  
-#        •  -3  Cold start (atmosphere only); Conv,Radiation,Cloud,Surface warm
-
 #EOP
 #-------------------------------------------------------------------#
 #BOC
@@ -111,13 +86,10 @@ subwrd() {
    echo "${str}" | awk -v var=${n} '{print $var}'
 }
 
-# Set script's real directory (follows symlinks; works when sourced or executed)
-LOCALDIR="$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]:-$0}")")"
-
-#
-# Include paths
-# shellcheck disable=SC1091
-. ${LOCALDIR}/EnvironmentalVariables
+# Set script's local directory
+LOCALDIR=$(dirname $(readlink -e ${0})) 
+#source ${LOCALDIR}
+source /home/luiz.sapucci/SMNA_v3.0.0.t11889/SMG/cptec/bam/run/EnvironmentalVariables
 
 # Check for command-line arguments, if none, show help
 if [ $# -eq 0 ]; then
@@ -126,93 +98,51 @@ if [ $# -eq 0 ]; then
 fi
 
 # Parse command-line options
-verbose=false
-args="$@"
-
+verbose='.FALSE.'
+args=${@}
 while (( $# )); do
-    opt="$1"
-    case ${opt} in
-    # --------------------------------------------------------------------
-    # MODELO / RESOLUÇÃO
-    # --------------------------------------------------------------------
-        -t|--truncation)   TRC=$2;     shift 2 ;;
-        -l|--levels)       LV=$2;      shift 2 ;;
-        -p|--prefix)       PREFY=$2;   shift 2 ;;
-
-    # --------------------------------------------------------------------
-    # CALENDÁRIO
-    # --------------------------------------------------------------------
-        -I|--icold)        LABELI=$2;  shift 2 ;;
-        -W|--iwarm)        LABELW=$2;  shift 2 ;;
-        -F|--final)        LABELF=$2;  shift 2 ;;
-        -ts|--tstep)       DHFCT=$2;   shift 2 ;;
-
-    # --------------------------------------------------------------------
-    # RESTART & TIMESTEPS
-    # --------------------------------------------------------------------
-        -i|--init-type)    INITLZ=$2;  shift 2 ;;
-        -r|--gen-restart)  GENRST='.TRUE.'; shift 1 ;;
-        -tr|--rst-tstep)   DHRES=$2;   shift 2 ;;
-        -rrst|--rm-restart) RMRST='.TRUE.'; shift 1 ;;
-        -rnm|--rm-nmodes)  RMNMF='.TRUE.'; shift 1 ;;
-        -rgaus|--rm-gauss) RMGAU='.TRUE.'; shift 1 ;;
-        -rmw|--rm-mwaves)  RMMWF='.TRUE.'; shift 1 ;;
-
-    # --------------------------------------------------------------------
-    # HÍBRIDO MPI + OPENMP / RECURSOS HPC
-    # --------------------------------------------------------------------
-        -np|--ntasks)          MPITasks=$2;          shift 2 ;;
-        -d|--cpus-per-task)    ThreadsPerMPITask=$2; shift 2 ;;
-        -N|--nodes)            TasksPerNode=$2;      shift 2 ;;
-        -c|--cores-per-node)   CoresPerNode=$2;      shift 2 ;;
-        -P|--procs)            TotalCoresRequested=$2; shift 2 ;;  # novo (usado pelo getMPIinfo)
-
-    # --------------------------------------------------------------------
-    # FÍSICA / CONFIGURAÇÕES ESPECIAIS
-    # --------------------------------------------------------------------
-        -s|--sst-file)    NMSST=$2;    shift 2 ;;
-        -sm|--soil-file)  NMSOILM=$2;  shift 2 ;;
-        -u|--unified)     UNIFIED='.TRUE.'; shift 1 ;;
-        -slagr|--semi-lag) SLAGR='.TRUE.';  shift 1 ;;
-        -das|--assim)     DAS='.TRUE.';     shift 1 ;;
-
-    # --------------------------------------------------------------------
-    # FILA / WALLTIME
-    # --------------------------------------------------------------------
-        -pw|--walltime)   walltime=$2;    shift 2 ;;
-        -pq|--queue)      queue=$2;       shift 2 ;;
-        -pn|--job-name)   queue_name=$2;  shift 2 ;;
-
-    # --------------------------------------------------------------------
-    # DEBUG / VERBOSE / DRY‑RUN
-    # --------------------------------------------------------------------
-        -v|--verbose)     verbose=true; shift 1 ;;
-        -D|--dry-run|-dryrun) DRYRUN=true;       shift 1 ;;
-
-    # --------------------------------------------------------------------
-    # AJUDA
-    # --------------------------------------------------------------------
-        -h|--help)
-            sed -n '/^#BOP/,/^#EOP/p' "$0"
-            exit 0
-            ;;
-
-    # --------------------------------------------------------------------
-    # DESCONHECIDO
-    # --------------------------------------------------------------------
-        *)
-            printf '\033[31;1m[WARN]\033[0m Unknown argument: \033[33;1m%s\033[0m\n' "$opt"
-            shift 1
-            ;;
-    esac
+   opt=$1
+   case ${opt} in
+       -t) TRC=$2; shift 2;; # shift twice [p.e. -t 299 ]
+       -l) LV=$2; shift 2;;
+     -mts) TimeStep=$2; shift 2;;
+       -px) PREFX=$2; shift 2;;
+       -py) PREFY=$2; shift 2;;
+       -I) LABELI=$2; shift 2;;
+       -W) LABELW=$2; shift 2;;
+       -F) LABELF=$2; shift 2;;
+       -i) INITLZ=$2; shift 2;;
+       -s) NMSST=$2; shift 2;;
+      -sm) NMSOILM=$2; shift 2;;
+      -ts) DHFCT=$2; shift 2;;
+      -tr) DHRES=$2; shift 2;;
+      -np) MPITasks=$2; shift 2 ;;
+       -N) TasksPerNode=$2; shift 2;;
+       -d) ThreadsPerMPITask=$2; shift 2;;
+       -c) CoresPerNode=$2; shift 2;;
+       -u) UNIFIED='.TRUE.';shift 1;;
+       -r) GENRST='.TRUE.'; shift 1;;
+    -rrst) RMRST='.TRUE.';shift 1;;
+     -rnm) RMNMF='.TRUE.'; shift 1;;
+   -rgaus) RMGAU='.TRUE.'; shift 1;;
+     -rmw) RMMWF='.TRUE.'; shift 1;;
+       -v) verbose='.TRUE.'; shift 1;;
+     -das) DAS='.TRUE.'; shift 1;;
+   -slagr) SLAGR='.TRUE.';shift 1;;
+       -f) FCT='.TRUE.';shift 1;;
+      -pw) walltime=$2;shift 2;;
+      -pq) queue=$2; shift 2;;
+      -pn) queue_name=$2; shift 2;;
+       -h) cat < ${0} | sed -n '/^#BOP/,/^#EOP/p' ; exit 0;;
+       *) echo -e "\033[31;1mWarning:\033[m Unknown argument:\033[33;1m $opt\033[m"; shift 1;;
+   esac
 done
-set -- $args   # restaura $@
+set -- $args #restore arguments
 
 # Verbose mode for debugging
-if [[ "${verbose}" == true ]]; then
+if [ ${verbose} = '.TRUE.' ]; then
    echo
    echo -e "running :: \033[33;1m$0\033[m \033[33;1m$@\033[m"
-   [ "${DRYRUN}" = '.TRUE.' ] && echo -e "\033[36;1m[DRY-RUN MODE]\033[m"
    echo
 fi
 
@@ -224,14 +154,18 @@ TRC=${TRC:-62}
 # LV: Number of vertical levels for the model (default: 28)
 LV=${LV:-28}
 
-# PREFY: Prefix for BAM input and output files (default: CPT)
-PREFY=${PREFY:-CPT}
+# Prefix for BAM input and output files (default: CPT)
+PREFY=${PREFY:-NMC}
+PREFX=${PREFX:-CPT}
 
 # INITLZ: Initialization type (default: 2, indicating diabatic normal mode initialization)
 INITLZ=${INITLZ:-2}
 
 # NMSST: Sea Surface Temperature (SST) file (default: sstwkl)
 NMSST=${NMSST:-sstwkl}
+
+# TimeStep: Model TimeStep (detault: 300s for TQ0299L064 - see the MODELIN for more options)
+TimeStep=${TimeStep:-200}
 
 # DHFCT: Forecast TimeStep (default: 6 hours)
 DHFCT=${DHFCT:-6}
@@ -266,9 +200,6 @@ DAS=${DAS:-.FALSE.}
 # Unified Physics Configuration (FCT)
 FCT=${FCT:-.FALSE.}
 
-# DRYRUN: if .TRUE. prepare everything but do NOT submit the job
-DRYRUN=${DRYRUN:-.FALSE.}
-
 # Semi-Lagrangian Option (SLAGR)
 SLAGR=${SLAGR:-.FALSE.}
 # Enable Semi-Lagrangian if truncation is >= 666
@@ -277,12 +208,13 @@ if [ ${TRC} -ge 666 ]; then
 fi
 
 # PBS Job Wall Time
-walltime=${walltime:-01:30:00}
+walltime=${walltime:-02:00:00}
 
 # PBS Job Queue
 # Set specific queue for each HPC system if not already defined
 case ${hpc_name} in
-  egeon) queue=${queue:-PESQ1} ;;
+#  egeon) queue=${queue:-PESQ1} ;;
+  egeon) queue=${queue:-batch} ;;
   XC50) queue=${queue:-pesq} ;;
 esac
 
@@ -329,33 +261,30 @@ if [[ $exit_code -ne 0 ]]; then
 fi
 
 # Set the number of processors and nodes for each machine type
-#  1.  Build argument list for getMPIinfo
-mpi_args=()
+#  - MPITasks: Set the number of MPI tasks
+#  - TasksPerNode: Set the number of MPI tasks per node
+#  - CoresPerNode: Set the total number of cores per node
+case ${hpc_name} in
+    egeon)
+        MPITasks=${MPITasks:-64}
+        TasksPerNode=${TasksPerNode:-16}
+        CoresPerNode=${CoresPerNode:-128}
+        MaxCoresPerNode=${CoresPerNode:-128}
+        ;;
+    XC50)
+        MPITasks=${MPITasks:-80}
+        TasksPerNode=${TasksPerNode:-40}
+        CoresPerNode=${CoresPerNode:-40}
+        MaxCoresPerNode=${CoresPerNode:-40}
+        ;;
+    *)
+        echo "[ERROR] Unknown HPC system: ${hpc_name}. Please define configurations."
+        exit 1
+        ;;
+esac
 
-#  flag -np | --ntasks
-[[ -v MPITasks ]] && mpi_args+=( -np "$MPITasks" )
-
-#  flag -d  | --cpus-per-task
-[[ -v ThreadsPerMPITask ]] && mpi_args+=( -d  "$ThreadsPerMPITask" )
-
-#  flag -N  | --nodes  (only if user forced it)
-[[ -v Nodes ]] && mpi_args+=( -N  "$Nodes" )
-
-#  flag -c  | --cores-per-node
-[[ -v CoresPerNode ]] && mpi_args+=( -c  "$CoresPerNode" )
-
-#  flag -P  | --procs  (total cores requested)
-[[ -v TotalCoresRequested ]] && mpi_args+=( -P  "$TotalCoresRequested" )
-
-# flag -v | --verbose (verbose mode)
-[[ ${verbose} == true ]] && mpi_args+=( -v )
-
-
-#  2.  Resolve the layout
-getMPIinfo "${mpi_args[@]}" || {
-    printf '[FATAL] getMPIinfo failed – aborting job setup.\n'
-    exit 1
-}
+# Set ThreadsPerMPITask to a default value if not set
+ThreadsPerMPITask=${ThreadsPerMPITask:-8}
 
 
 # Set up the environment for the model
@@ -370,6 +299,8 @@ MRES=$(printf "TQ%04dL%03d" ${TRC} ${LV})
 # SETTING MODELIN NAME
 modelIn='MODELIN.default'
 
+
+
 # Diretorios das simulações
 
 BAMEXE=${SUBTBASE}/model/exec/ParModel_MPI
@@ -377,18 +308,18 @@ PATHIN=${SUBTBASE}/model/datain
 
 
 if [ ${DAS} = '.TRUE.' -a ${FCT} = '.FALSE.' ];then
-   BAMRUN=${SUBTBASE}/model/DAS/exec_${PREFY}${LABELI}
+   BAMRUN=${SUBTBASE}/model/DAS/exec_${PREFX}${LABELI}
    BAMSCP=${BAMRUN}/qsub_bam.qsb
    BAMLOG=${BAMRUN}/setout/Print.model.${LABELI}.${LABELF}.${tmstp}.MPI${MPITasks}.out
-   PBSLOG=${BAMRUN}/setout/Out.model.${PREFY}.${LABELI}.${tmstp}.MPI${MPITasks}.out
+   PBSLOG=${BAMRUN}/setout/Out.model.${PREFX}.${LABELI}.${tmstp}.MPI${MPITasks}.out
    PATHOU=${WORKBASE}/model/dataout/${MRES}/DAS/${LABELI}
    RSTIN=${WORKBASE}/model/dataout/${MRES}/DAS/${LABELI}/RST
    RSTOU=${WORKBASE}/model/dataout/${MRES}/DAS/${LABELR}/RST
 else
-   BAMRUN=${SUBTBASE}/model/exec_${PREFY}${LABELI}
+   BAMRUN=${SUBTBASE}/model/exec_${PREFX}${LABELI}
    BAMSCP=${BAMRUN}/qsub_bam.qsb
    BAMLOG=${BAMRUN}/setout/Print.model.${LABELI}.${LABELF}.${tmstp}.MPI${MPITasks}.out
-   PBSLOG=${BAMRUN}/setout/Out.model.${PREFY}.${LABELI}.${tmstp}.MPI${MPITasks}.out
+   PBSLOG=${BAMRUN}/setout/Out.model.${PREFX}.${LABELI}.${tmstp}.MPI${MPITasks}.out
    PATHOU=${WORKBASE}/model/dataout/${MRES}/${LABELI}
    RSTIN=${WORKBASE}/model/dataout/${MRES}/${LABELI}/RST
    RSTOU=${WORKBASE}/model/dataout/${MRES}/${LABELR}/RST
@@ -469,7 +400,7 @@ fi
 # Define the model initialization parameters
 if [ $DAS = '.TRUE.' ]; then
    # If DAS is enabled, set the prefix and time step values for the model
-   PREFX='CPT'
+   #PREFX='CPT'
 
    # If Forecasting (FCT) is not enabled, set the integration time steps to 1800 seconds
    if [ ${FCT} = '.FALSE.' ]; then
@@ -483,7 +414,7 @@ if [ $DAS = '.TRUE.' ]; then
 
 else
    # If DAS is not enabled, set the prefix and time steps for the model
-   PREFX='NMC'
+   #PREFX='NMC'
    SWINT=3600.000  # Short integration time step
    TRINT=10800.000 # Time step for restart
 fi
@@ -493,6 +424,27 @@ fi
 #
 
 cp -pfr ${BAMEXE} ${BAMRUN}/
+
+#
+# GET NUMBER OF NODES
+#
+
+TasksPerNode=$((${MaxCoresPerNode}/${ThreadsPerMPITask})) # Number of Processors used by each MPI tasks
+PEs=$((${MPITasks}/${ThreadsPerMPITask}))
+Nodes=$(((${MPITasks}+${MaxCoresPerNode}-1)/${MaxCoresPerNode}))
+
+#
+# Sanity Check
+#
+sanity=$((${TasksPerNode}*${ThreadsPerMPITask}))
+if [ ${sanity} -ne ${MaxCoresPerNode} ];then
+   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m Redefina Numero de Processos MPI e openMP\e[m"
+   echo -e "\e[31;1m MaxCoresPerNode = ${sanity}, should be\e[m \e[33;1m${MaxCoresPerNode}\e[m"
+   echo -e "\e[31;1m TasksPerNode = ${TasksPerNode}, ThreadsPerMPITask = ${ThreadsPerMPITask}\e[m"
+   exit -1
+fi
+
+
 
 #
 # CREATE/MODIFY MODELIN AND COPY TO BAMRUN DIR
@@ -534,127 +486,109 @@ sed  -e "s;#TRUNC#;${TRC};g" \
 
 case ${hpc_name} in
 
-  egeon)
+  egeon) cat << EOF1 > ${BAMSCP}
+#!/bin/bash
+#SBATCH --output=/${BAMRUN}/setout/Out.model.${PREFX}.${LABELI}.${tmstp}.MPI${MPITasks}.out
+#SBATCH --error=/${BAMRUN}/setout/Out.model.${PREFX}.${LABELI}.${tmstp}.MPI${MPITasks}.out
+#SBATCH --time=${walltime}
+#SBATCH --ntasks=${MPITasks}
+#SBATCH --ntasks-per-node=${TasksPerNode}    # Specify number of (MPI) tasks on each node
+#SBATCH --cpus-per-task=${ThreadsPerMPITask} # How many cores should get assigned to each (MPI) task
+##SBATCH --job-name=${queue_name}
+#SBATCH --job-name=BH${LABELI:4:6}
+#SBATCH --partition=${FILA}
+## SBATCH --account=CPTEC
 
-    # ----------------------------------------------------------
-    # Gera o script SLURM (${BAMSCP}) com printf (tabs incluídos)
-    # ----------------------------------------------------------
-    {
-        printf '%s\n' '#!/bin/bash'
-        printf '%s\n' '#SBATCH --output='"${BAMRUN}/setout/Out.model.${PREFY}.${LABELI}.${tmstp}.MPI${MPITasks}.out"
-        printf '%s\n' '#SBATCH --error='"${BAMRUN}/setout/Out.model.${PREFY}.${LABELI}.${tmstp}.MPI${MPITasks}.out"
-        printf '%s\n' '#SBATCH --time='${walltime}
-        printf '%s\n' '#SBATCH --ntasks='${MPITasks}
-        printf '%s\n' '#SBATCH --ntasks-per-node='${TasksPerNode}
-        printf '%s\n' '#SBATCH --cpus-per-task='${ThreadsPerMPITask}
-        printf '%s\n' '#SBATCH --job-name='${queue_name}
-        printf '%s\n' '#SBATCH --partition='${queue}
-        printf '\n'
-    
-        # bloco de execução (com indentação por tab):
-        printf '%s\n' "cd ${BAMRUN}"
-        printf '%s\n' 'pwd'
-        printf '\n'
-    
-        printf '%s\n' 'export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK'
-        printf '%s\n' 'export KMP_AFFINITY=verbose,granularity=thread,compact,1'
-        printf '%s\n' 'export MPICH_NO_BUFFER_ALIAS_CHECK=TRUE'
-        printf '%s\n' 'export I_MPI_COMPATIBILITY=4'
-        printf '%s\n' 'export MP_EUIDEVELOP=min'
-        printf '%s\n' 'ulimit -s unlimited'
-        printf '%s\n' 'ulimit -v unlimited'
-        printf '\n'
-    
-        printf '%s\n' 'module purge'
-        printf '%s\n' 'module load intel/2021.4.0'
-        printf '%s\n' 'module load mpi/2021.4.0 impi/2021.4.0'
-        printf '%s\n' 'module load netcdf/4.7.4 pnetcdf/1.12.2 netcdf-fortran/4.5.3'
-        printf '%s\n' 'module list'
-        printf '\n'
-    
-        printf '%s\n' 'export KMP_STACKSIZE=128m'
-        printf '\n'
-    
-        # linha de execução do modelo (TAB antes do mpirun, se quiser)
-        printf '%s\n' "mpirun -np \$SLURM_NTASKS ${BAMRUN}/$(basename "${BAMEXE}") > ${BAMLOG} 2>&1"
-    } > "${BAMSCP}"
+# cd \$PBS_O_WORKDIR
+cd ${BAMRUN}
+pwd
+####
+# Bind your OpenMP threads
+export OMP_NUM_THREADS=\$SLURM_CPUS_PER_TASK
+export KMP_AFFINITY=verbose,granularity=thread,compact,1
 
+
+export MPICH_NO_BUFFER_ALIAS_CHECK=TRUE
+export I_MPI_COMPATIBILITY=4
+export MP_EUIDEVELOP=min
+
+#
+ulimit -s unlimited
+# ulimit -m unlimited
+ulimit -v unlimited
+
+module purge
+module load intel/2021.4.0
+module load mpi/2021.4.0 impi/2021.4.0
+module load netcdf/4.7.4 pnetcdf/1.12.2 netcdf-fortran/4.5.3
+
+module list
+
+export KMP_STACKSIZE=128m
+####
+echo mpirun -np ${MPITasks} ${BAMRUN}/$(basename ${BAMEXE}) > ${BAMLOG} 2>&1
+mpirun -np \$SLURM_NTASKS ${BAMRUN}/$(basename ${BAMEXE}) > ${BAMLOG} 2>&1
+
+EOF1
     # submit Pre-process
     echo -ne "\033[34;1m Running BAM \033[m"
-    cd "${BAMRUN}"
 
-    if [[ ${DRYRUN} == true ]]; then
-        echo "[DRYRUN] sbatch --wait ${BAMSCP}"
-        qstatus=0
-    else
-        PID=$(sbatch --wait "${BAMSCP}"; exit ${PIPESTATUS[0]})
-        qstatus=$?
-    fi
+    cd ${BAMRUN}
+
+    PID=$(sbatch --wait ${BAMSCP}; exit ${PIPESTATUS[0]})
+    qstatus=$?
   ;;
-  xc50) 
-    # ----------------------------------------------------------
-    # Gera ${BAMSCP} usando printf (sem here-doc)
-    # ----------------------------------------------------------
-    {
-        printf '%s\n' '#!/bin/bash'
-        printf '%s\n' '#PBS -V'
-        printf '%s\n' '#PBS -j oe'
-        printf '%s\n' '#PBS -S /bin/bash'
-        printf '%s\n' '#PBS -o '"${BAMRUN}/setout/Out.model.${PREFY}.${LABELI}.${tmstp}.MPI${MPITasks}.out"
-        printf '%s\n' '#PBS -l walltime='${walltime}
-        printf '%s\n' '#PBS -l nodes='${Nodes}':ppn='${MaxCoresPerNode}
-        printf '%s\n' '#PBS -N '"${queue_name}"
-        printf '%s\n' '#PBS -q '"${queue}"
-        printf '%s\n' '#PBS -A '"${QUOTA}"
-        printf '%s\n' '#PBS -A '"${QUOTA}"
-        printf '\n'
-    
-        printf '%s\n' '# bypass the buffer aliasing error checking in MPI collective calls.'
-        printf '%s\n' 'export MPICH_NO_BUFFER_ALIAS_CHECK=1'
-        printf '\n'
-    
-        printf '%s\n' 'ulimit -s unlimited'
-        printf '%s\n' 'ulimit -c unlimited'
-        printf '\n'
-    
-        printf '%s\n' 'export HUGETLB_MORECORE=yes'
-        printf '%s\n' 'export HUGETLB_ELFMAP=W'
-        printf '%s\n' 'export HUGETLB_FORCE_ELFMAP=yes+'
-        printf '%s\n' 'export MPICH_ENV_DISPLAY=1'
-        printf '%s\n' 'export HUGETLB_DEFAULT_PAGE_SIZE=2m'
-        printf '%s\n' 'export OMP_NUM_THREADS='${ThreadsPerMPITask}
-        printf '%s\n' 'export OMP_STACKSIZE=256M'
-        printf '\n'
-    
-        printf '%s\n' 'cd $PBS_O_WORKDIR'
-        printf '%s\n' '#--------------------------'
-        printf '%s\n' '# para o cce'
-        printf '%s\n' 'export FILENV=.assign'
-        printf '%s\n' 'assign -R'
-        printf '%s\n' 'assign -N ieee g:all'
-        printf '%s\n' 'assign -I -N swap_endian g:all'
-        printf '%s\n' '#assign -N ieee g:su'
-        printf '%s\n' '#assign -N ieee g:du'
-        printf '%s\n' 'assign -V'
-        printf '\n'
-    
-        # linha aprun (quebra para legibilidade)
-        printf '%s\n' '/usr/bin/time -v aprun -m1000h -n '"${PEs}"' -N '"${TasksPerNode}"' -d '"${ThreadsPerMPITask}"' \' 
-        printf '%s\n' "${BAMRUN}/$(basename "${BAMEXE}") > ${BAMLOG} 2>&1"
-    } > "${BAMSCP}"
-    
+  xc50) cat << EOF > ${BAMSCP}
+#!/bin/bash
+#PBS -o ${BAMRUN}/setout/Out.model.${PREFX}.${LABELI}.${tmstp}.MPI${MPITasks}.out
+#PBS -j oe
+#PBS -l walltime=${walltime}
+#PBS -l nodes=${Nodes}:ppn=${MaxCoresPerNode}
+#PBS -V
+#PBS -S /bin/bash
+#PBS -N ${queue_name}
+#PBS -q ${queue}
+#PBS -A ${QUOTA}
+
+
+# bypass the buffer aliasing error checking in MPI collective calls.
+export MPICH_NO_BUFFER_ALIAS_CHECK=1
+
+ulimit -s unlimited
+ulimit -c unlimited
+
+export HUGETLB_MORECORE=yes
+export HUGETLB_ELFMAP=W
+export HUGETLB_FORCE_ELFMAP=yes+
+export MPICH_ENV_DISPLAY=1
+export HUGETLB_DEFAULT_PAGE_SIZE=2m
+export OMP_NUM_THREADS=${ThreadsPerMPITask}
+export OMP_STACKSIZE=256M
+
+cd \$PBS_O_WORKDIR
+#--------------------------
+# para o cce
+export FILENV=.assign
+assign -R
+assign -N ieee g:all
+assign -I -N swap_endian g:all
+#assign -N ieee g:su
+#assign -N ieee g:du
+assign -V
+
+
+/usr/bin/time -v aprun -m1000h -n ${PEs} -N ${TasksPerNode} -d ${ThreadsPerMPITask} \
+${BAMRUN}/$(basename ${BAMEXE}) > ${BAMLOG} 2>&1
+
+EOF
+
     # submit Job
     echo -ne "\033[34;1m Running BAM \033[m"
 
     cd ${BAMRUN}
 
-    if [[ ${DRYRUN} == true ]]; then
-        echo "[DRYRUN] qsub -W block=true ${BAMSCP}"
-        qstatus=0
-    else
-        PID=$(qsub -W block=true "${BAMSCP}"; exit ${PIPESTATUS[0]})
-        qstatus=$?
-    fi
+    PID=$(qsub -W block=true ${BAMSCP}; exit ${PIPESTATUS[0]})
+    qstatus=$?
    ;;
 
  esac

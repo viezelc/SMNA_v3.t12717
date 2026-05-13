@@ -196,10 +196,12 @@ FixedFiles ${AnlTrunc} ${AnlNLevs} ${RunDir}
 #-----------------------------------------------------------#
 # Copy info Files (satInfo, convInfo, ozInfo)
 #getInfoFiles ${AnlDate}
-
 # Get Satellite bias files
 getSatBias ${AnlDate} ${BkgDate} ${RunDir} ${subt_gsi_dataout}
-BcCycles=$?  ### recebe =1 se não encontrar satbias_out no diretorio BkgDate (rodada anterior) 
+if [ -z "${BcCycles}" ];then # verifica se a varaivel veio como argumento de entrada
+   BcCycles=$?  ### recebe =1 se não encontrar satbias_out no diretorio BkgDate (rodada anterior) 
+fi
+
 #------------------------------------------------------------#
 # running GSI at tupa
 #
@@ -209,6 +211,7 @@ if [ ${BcCycles} -gt 0 ];then
 fi
 
 echo " Entrando no ciclo de BcCycles para "$(seq 0 ${BcCycles} )
+
 for cycle in $(seq 0 ${BcCycles} ); do
 
    if [ ${BcCycles} -gt 0 ];then
@@ -242,15 +245,33 @@ for cycle in $(seq 0 ${BcCycles} ); do
       exit 1
    fi
 
+   echo ">>> mergeDiagFiles"
    mergeDiagFiles ${RunDir} ${AnlDate}
 
-## Create links for diag satellite files 
-   for diagfn in diag_amsua_* 
-   do 
-      lennm=${#diagfn} 
-      lenbase=$(( lennm -14 ))  # length of file name without date
-      ln $diagfn ${diagfn:0:$lenbase}
-   done
+   echo ">>> mergeDiagFiles do diagnostico da radi�ncia"
+
+
+   ls ${RunDir}/diag_amsua_* ${RunDir}/diag_atms_* #${RunDir}/diag_atms_* 
+
+
+
+## Create links for diag AMSUA satellite files 
+#   for diagfn in diag_amsua_*  
+#   do 
+#      lennm=${#diagfn} 
+#      lenbase=$(( lennm -11 ))  # length of file name without date
+#      ln $diagfn ${diagfn:0:$lenbase}
+#   done
+
+## Create links for diag ATMS satellite files 
+#   for diagfn in diag_atms_*  
+#   do 
+#      lennm=${#diagfn} 
+#      lenbase=$(( lennm -11 ))  # length of file name without date
+#      ln $diagfn ${diagfn:0:$lenbase}
+#   done
+#echo "Depois dos links"   
+#ls diag_amsua_* diag_atms_*    
 
 #   echo -ne "\033[34;1m Running GSI Angle Update tool \033[m"
 #
@@ -283,8 +304,8 @@ for cycle in $(seq 0 ${BcCycles} ); do
          cp -pfr ${BcDirOut}/${satbiasOu} ${RunDir}/${satbiasIn}
          echo cp -pfr ${BcDirOut}/${satbiasPCOu} ${RunDir}/${satbiasPCIn}
          cp -pfr ${BcDirOut}/${satbiasPCOu} ${RunDir}/${satbiasPCIn}
-         echo cp -pfr ${BcDirOut}/${satbiasAngOu} ${RunDir}/${satbiasAngIn}
-         cp -pfr ${BcDirOut}/${satbiasAngOu} ${RunDir}/${satbiasAngIn}
+#         echo cp -pfr ${BcDirOut}/${satbiasAngOu} ${RunDir}/${satbiasAngIn}
+#         cp -pfr ${BcDirOut}/${satbiasAngOu} ${RunDir}/${satbiasAngIn}
 
       fi
 
