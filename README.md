@@ -5,11 +5,20 @@ Versão instalada na Egeon, seguindo os passos abaixo:
 
 
 1. Clone:
+   SVN:
    ```
    cd ${HOME}
    svn co https://svn.cptec.inpe.br/smna/branch/SMNA_v3.0.0.t12717
     ```
-2. Configuração do SMNA:
+2. Clone:
+
+   GitHub:
+   ```
+   cd ${HOME}
+   git clone https://github.com/viezelc/SMNA_v3.t12717.git SMNA_v3.0.0.t12717
+   ```
+   
+4. Configuração do SMNA:
    ```
    cd SMNA_v3.0.0.t12717
    cd SMG/etc/mach
@@ -22,7 +31,7 @@ Versão instalada na Egeon, seguindo os passos abaixo:
    ./config_smg.ksh configure
    ```
 
-3. Ajuste para resolver problema na compilação (esse ajuste não subiu para o svn):
+5. Ajuste para resolver problema na compilação (esse ajuste não subiu para o svn):
    ```
    cd ~/SMNA_v3.0.0.t12717/SMG/cptec/gsi/util/global_angupdate
    vi Makefile.conf.egeon-intel
@@ -40,20 +49,20 @@ Versão instalada na Egeon, seguindo os passos abaixo:
    CORECRTM = /home/$(USER_NAME)/SMNA_v3.0.0.t12717/SMG/cptec/gsi/libsrc
    ```
 
-4. Compilação do GSI e BAM:
+6. Compilação do GSI e BAM:
    ```
    cd SMNA_v3.0.0.t12717/SMG
    nohup ./config_smg.ksh compile > compile1.log &
    ```
 
-5. Testcase:
+7. Testcase:
    ```
    cd SMNA_v3.0.0.t12717/SMG
    ./config_smg.ksh testcase
    ```
    Escolher opção [2].
 
-6. Execução:
+8. Execução:
    
    AJUSTES NECESSÁRIOS:
    ```
