@@ -12,10 +12,23 @@ Versão instalada na Egeon, seguindo os passos abaixo:
     ```
 2. Clone:
 
-   GitHub:
+   GitHub:  
+   Pré-requisito: Git LFS  
+   Caso não tenha instalado fazer --->  
+   Linux (Ubuntu/Debian): `sudo apt install git-lfs`  
+   macOS (Homebrew): `brew install git-lfs`  
+   Windows: Baixar o instalador direto do site oficial.  
+   ATIVAR: `git lfs install`
+   
    ```
    cd ${HOME}
    git clone https://github.com/viezelc/SMNA_v3.t12717.git SMNA_v3.0.0.t12717
+   ```
+
+   Caso o repositório já tenha sido clonado fazer:
+   ```
+   cd SMNA_v3.0.0.t12717
+   git lfs pull
    ```
    
 4. Configuração do SMNA:
