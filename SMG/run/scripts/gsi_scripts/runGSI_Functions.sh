@@ -283,9 +283,10 @@ linkObs ( ){
 # local para ler os dados de datas recentes na operação (ultimos 30 dias)   
 #   local obsDir=${obsDir}:${ncep_ext}/${runDate:0:8}00/dataout/NCEP
 # local para testes com o fomrato do arquivo prepbufr do INPE   
-   local obsDir=/mnt/beegfs/luiz.sapucci/obs_V1.3.3/dataout/${runDate:0:8} 
+#   local obsDir=/mnt/beegfs/luiz.sapucci/obs_V1.3.3/dataout/${runDate:0:8} 
 # local para ler dados salvos em experimentos   
 #   local obsDir=/pesq/dados/das/poper/luiz.sapucci/NCEPdataSMNA/PrepBufr/${runDate}
+   local obsDir=/oper/dados/dboper/raw/arch/mod/ncep/gdas/${runDate:0:4}/${runDate:4:2}/${runDate:6:2}
    
 #   local obsDir=${obsDir}:/lustre_xc50/ioper/data/external/ASSIMDADOS
 #   local obsDir=${obsDir}:/lustre_xc50/joao_gerd/data/${runDate}
