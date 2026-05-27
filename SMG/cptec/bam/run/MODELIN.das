@@ -155,7 +155,7 @@ grid_difus          =.TRUE.,       !
  thermcell=1,          !
  atmpbl = 4,           !
                        ! 
- schemes = 3 ,         ! 1 ssib; 2 sib2; 3 ibis
+ schemes = 1 ,         ! 1 ssib; 2 sib2; 3 ibis
  isimco2 = 0,          !
  gbaco2  = 0.0e-10,    !-4.1109e-09  !-3.01522e-09, !      
  OCFLUX  = 'UKME',     ! OCFLUX  = 'COLA',
