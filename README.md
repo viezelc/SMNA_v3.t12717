@@ -23,9 +23,10 @@ Versão instalada na Egeon, seguindo os passos abaixo:
    ```
    cd ${HOME}
    git clone https://github.com/viezelc/SMNA_v3.t12717.git SMNA_v3.0.0.t12717
+   git chechout chore/ajustes-config
    ```
 
-   Caso o repositório já tenha sido clonado fazer:
+   Depois do repositório clonado fazer o lfs pull (passo importante):
    ```
    cd SMNA_v3.0.0.t12717
    git lfs pull
