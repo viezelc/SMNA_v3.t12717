@@ -5,7 +5,7 @@ https://svn.cptec.inpe.br/smna/branch/SMNA_v3.0.0.t12717
 
 Versão instalada na Egeon, seguindo os passos abaixo:
 
-0. Observe os pré requisitos antes de iniciar
+1. Observe os pré requisitos antes de iniciar
 
    GitHub:  
    Pré-requisito: Git LFS  
@@ -15,43 +15,48 @@ Versão instalada na Egeon, seguindo os passos abaixo:
    Windows: Baixar o instalador direto do site oficial.  
    ATIVAR: `git lfs install`
 
-1. Clone a versão depois de atender os requisitos acima e faca o checkout do branch:
-   
+2. Clone a versão depois de atender os requisitos acima:
+ 
    ```
-   cd ${HOME}
-   git clone https://github.com/viezelc/SMNA_v3.t12717.git SMNA_v3.0.0.t12717
-   cd SMNA_v3.0.0.t12717
-   git checkout chore/ajustes-config
+   cd ${HOME};
+   git clone https://github.com/viezelc/SMNA_v3.t12717.git SMNA_v3.0.0.t12717;
+   cd SMNA_v3.0.0.t12717;
    ```
 
-2. Depois do repositório clonado fazer o lfs pull (passo importante):
+3. Caso seo caso faca o checkout em um branch desejado, caso queira usar o master pule essa etapa:
+   
+   ```
+   git checkout chore/ajustes-config;
+   ```
+
+4. Depois do repositório clonado fazer o lfs pull (passo importante):
    ```
    git lfs pull
    ```
    
-3. Configuração do SMNA:
+5. Configuração do SMNA:
    ```
-   cd SMNA_v3.0.0.t12717/SMG
+   cd SMNA_v3.0.0.t12717/SMG;
    ./config_smg.ksh configure
    ```
 Obs. Caso tenha ou queira mais de uma versão edite arquivo `egeon_paths.conf` e ajustar a variável "nome_smg" para um outro nome desejado. A atual versão está como "SMNA_v3.0.0.t12717/SMG"
 
-4. Compilação do GSI e BAM:
+6. Compilação do GSI e BAM:
    ```
-   cd SMNA_v3.0.0.t12717/SMG
+   cd SMNA_v3.0.0.t12717/SMG;
    nohup ./config_smg.ksh compile > compile1.log &
    ```
 
-5. Testcase:
+7. Testcase:
    ```
-   cd SMNA_v3.0.0.t12717/SMG
+   cd SMNA_v3.0.0.t12717/SMG;
    ./config_smg.ksh testcase
    ```
    Escolher opção [2].
 
-6. Execução do pré na rodada anterior para preparação do ciclo de assimilação:
+8. Execução do pré na rodada anterior para preparação do ciclo de assimilação:
    ```
-   cd ~/SMNA_v3.0.0.t12717/SMG/cptec/bam/run
+   cd ~/SMNA_v3.0.0.t12717/SMG/cptec/bam/run;
    ./runPre -t 299 -l 64 -I 2025050900 -n 0 -O -T -G -Gt Netcdf -s
    ```
 
@@ -61,13 +66,13 @@ Obs. Caso tenha ou queira mais de uma versão edite arquivo `egeon_paths.conf` e
    ls /mnt/beegfs/caroline.viezel/SMNA_v3.0.0.t12717/SMG/datainout/bam/pre/datain/
    ```
    
-7. Rodar o Modelo para essa data anterior para preparar os FirstGuess do inicio do ciclo de assimilação:
+9. Rodar o Modelo para essa data anterior para preparar os FirstGuess do inicio do ciclo de assimilação:
    ```
    ./runModel -t 299 -l 64 -I 2025050900 -F 2025050909 -ts 3 -py SMT -px CPT -das -r
    ```
 
-8. Testar do ciclo de assimilação no SMNA  
+10. Testar do ciclo de assimilação no SMNA  
    ```
-   cd ~/SMNA_v3.0.0.t12717/SMG/run
+   cd ~/SMNA_v3.0.0.t12717/SMG/run;
    ./run_cycle.sh -t 299 -l 64 -gt 299 -p CPT -I 2025050906 -F 2025050912
    ```
