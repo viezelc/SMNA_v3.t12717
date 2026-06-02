@@ -20,7 +20,7 @@ Versão instalada na Egeon, seguindo os passos abaixo:
    ```
    cd ${HOME};
    git clone https://github.com/viezelc/SMNA_v3.t12717.git SMNA_v3.0.0.t12717;
-   cd SMNA_v3.0.0.t12717;
+   cd ~/SMNA_v3.0.0.t12717;
    ```
 
 3. Caso seo caso faca o checkout em um branch desejado, caso queira usar o master pule essa etapa:
@@ -36,20 +36,20 @@ Versão instalada na Egeon, seguindo os passos abaixo:
    
 5. Configuração do SMNA:
    ```
-   cd SMNA_v3.0.0.t12717/SMG;
+   cd ~/SMNA_v3.0.0.t12717/SMG;
    ./config_smg.ksh configure
    ```
 Obs. Caso tenha ou queira mais de uma versão edite arquivo `egeon_paths.conf` e ajustar a variável "nome_smg" para um outro nome desejado. A atual versão está como "SMNA_v3.0.0.t12717/SMG"
 
 6. Compilação do GSI e BAM:
    ```
-   cd SMNA_v3.0.0.t12717/SMG;
+   cd ~/SMNA_v3.0.0.t12717/SMG;
    nohup ./config_smg.ksh compile > compile1.log &
    ```
 
 7. Testcase:
    ```
-   cd SMNA_v3.0.0.t12717/SMG;
+   cd ~/SMNA_v3.0.0.t12717/SMG;
    ./config_smg.ksh testcase
    ```
    Escolher opção [2].
@@ -92,15 +92,15 @@ Obs. Caso tenha ou queira mais de uma versão edite arquivo `egeon_paths.conf` e
 12. Pós-processamento das previsões (rodar o Pós):  
     Obs.: verificar se o arquivo `POSTIN-GRIB.template` encontra-se no diretório `SMG/cptec/bam/run`. Este arquivo foi adicionado recentemente e pode ser encontrado em https://projetos.cptec.inpe.br/projects/smna/repository/revisions/162/entry/branch/SMNA_v3.0.x/SMG/cptec/bam/run/POSTIN-GRIB.template
 
-   ↪️ Exemplo para previsão de 5 dias:
-   
-    cd /home/${USER}/SMNA_v3.0.0.t11889/SMG/cptec/bam/run
-    
-    rodada das previsões:  
-    data=2025050906
-    dataINTEG= `~/evalu/run/inctime $data +5d  %y4%m2%d2%h2 `
-    ./runModel -t 299 -l 64 -I $data -F $dataINTEG -ts 6 -py CPT -px CPT
-    
-    Pós:  
-    ./runPos -t 299 -l 64 -I $data -F $dataINTEG
-    
+   ↪️ Exemplo para previsão de 5 dias: ⬇️
+   ```
+   cd /home/${USER}/SMNA_v3.0.0.t12717/SMG/cptec/bam/run
+   ```
+Previsões:
+   ``` 
+   ./runModel -t 299 -l 64 -I 2025050906 -F 2025051406 -ts 6 -py CPT -px CPT
+   ```
+Pós:
+   ```  
+   ./runPos -t 299 -l 64 -I $data -F $dataINTEG
+   ```
