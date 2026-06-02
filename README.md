@@ -71,8 +71,36 @@ Obs. Caso tenha ou queira mais de uma versão edite arquivo `egeon_paths.conf` e
    ./runModel -t 299 -l 64 -I 2025050900 -F 2025050909 -ts 3 -py SMT -px CPT -das -r
    ```
 
-10. Testar do ciclo de assimilação no SMNA  
+10. Testar o ciclo de assimilação no SMNA  
    ```
    cd ~/SMNA_v3.0.0.t12717/SMG/run;
    ./run_cycle.sh -t 299 -l 64 -gt 299 -p CPT -I 2025050906 -F 2025050912
    ```
+
+11. ☑️ Arquivos de saída:
+    
+    ARQUIVOS setout modelo ->  
+    modelo: /mnt/beegfs/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam/model/DAS
+    
+    ARQUIVOS datarun GSI ->  
+    GSI: /mnt/beegfs/${USER}/SMNA_v3.0.0.t12717/SMG/datarun/gsi
+    
+    RESULTADOS ->  
+    Saídas do GSI: /mnt/beegfs/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/gsi/dataout  
+    Saídas do modelo: /mnt/beegfs/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam/model/dataout/TQ0299L064/DAS
+
+12. Pós-processamento das previsões (rodar o Pós):  
+    Obs.: verificar se o arquivo `POSTIN-GRIB.template` encontra-se no diretório `SMG/cptec/bam/run`. Este arquivo foi adicionado recentemente e pode ser encontrado em https://projetos.cptec.inpe.br/projects/smna/repository/revisions/162/entry/branch/SMNA_v3.0.x/SMG/cptec/bam/run/POSTIN-GRIB.template
+
+   ↪️ Exemplo para previsão de 5 dias:
+   
+    cd /home/${USER}/SMNA_v3.0.0.t11889/SMG/cptec/bam/run
+    
+    rodada das previsões:  
+    data=2025050906
+    dataINTEG= `~/evalu/run/inctime $data +5d  %y4%m2%d2%h2 `
+    ./runModel -t 299 -l 64 -I $data -F $dataINTEG -ts 6 -py CPT -px CPT
+    
+    Pós:  
+    ./runPos -t 299 -l 64 -I $data -F $dataINTEG
+    
