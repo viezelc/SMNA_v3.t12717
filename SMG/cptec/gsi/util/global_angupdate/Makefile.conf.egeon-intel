@@ -12,9 +12,13 @@ USER_NAME := $(shell whoami)
 NETCDF = /opt/ohpc/pub/libs/intel/impi/netcdf/4.7.4
 NETCDFF = /opt/ohpc/pub/libs/intel/impi/netcdf-fortran/4.5.3
 
-COREGSI  = /mnt/beegfs/$(USER_NAME)/SMNA_v3.0.0.t11889/SMG/cptec/gsi
-CORELIB  = /mnt/beegfs/$(USER_NAME)/SMNA_v3.0.0.t11889/SMG/cptec/gsi/libsrc
-CORECRTM = /mnt/beegfs/$(USER_NAME)/SMNA_v3.0.0.t11889/SMG/cptec/gsi/libsrc
+#COREGSI  = /mnt/beegfs/$(USER_NAME)/SMNA_v3.0.0.t11889/SMG/cptec/gsi
+#CORELIB  = /mnt/beegfs/$(USER_NAME)/SMNA_v3.0.0.t11889/SMG/cptec/gsi/libsrc
+#CORECRTM = /mnt/beegfs/$(USER_NAME)/SMNA_v3.0.0.t11889/SMG/cptec/gsi/libsrc
+
+COREGSI  = /home/$(USER_NAME)/SMNA_v3.0.0.t12717/SMG/cptec/gsi
+CORELIB  = /home/$(USER_NAME)/SMNA_v3.0.0.t12717/SMG/cptec/gsi/libsrc
+CORECRTM = /home/$(USER_NAME)/SMNA_v3.0.0.t12717/SMG/cptec/gsi/libsrc
 
 INCgsi   = $(COREGSI)/build/src/gsi/include/gsi
 INCdiag  = $(COREGSI)/build/src/ncdiag/include/ncdiag
