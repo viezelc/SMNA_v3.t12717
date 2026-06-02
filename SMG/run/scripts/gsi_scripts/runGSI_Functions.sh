@@ -121,8 +121,11 @@ constants ( ) {
    export cldRadInfo=${home_gsi_fix}/cloudy_radiance_info.txt
 #   export SatBiasSample=${public_fix}/comgsi_satbias_in
 #   export SatBiasPCSample=${public_fix}/comgsi_satbias_pc_in
-   export SatBiasSample=${public_fix}/gdas1.t00z.abias
-   export SatBiasPCSample=${public_fix}/gdas1.t00z.abias_pc
+# Colocando arquivos de BC do SMNA ver issue 85 do readDiag
+#   export SatBiasSample=${public_fix}/gdas1.t00z.abias
+#   export SatBiasPCSample=${public_fix}/gdas1.t00z.abias_pc
+   export SatBiasSample=${public_fix}/satbias_out_50ciclos
+   export SatBiasPCSample=${public_fix}/satbias_pc.out_50ciclos
    export ScanInfo=${home_gsi_fix}/global_scaninfo.txt
    export SatBiasAngSample=${home_gsi_fix}/global_satangbias.txt
    export execBCAng=${home_cptec}/bin/global_angupdate
@@ -503,10 +506,11 @@ getSatBias ( ){
    if [ ${#FileSatbiasOu} -eq 0 ];then
 
      echo -e "\033[31;1m #--------------------------------------#\033[m"
-     echo -e "\033[31;1m #    1° ciclo de assimilação           #\033[m"
-     echo -e "\033[31;1m #  Caso não seja o 1° ciclo verificar  #\033[m"
-     echo -e "\033[31;1m #    porque não copiou o arquivo       #\033[m"
-     echo -e "\033[31;1m #            ${satbiasOu}            #\033[m"
+     echo -e "\033[31;1m #     Usando o os coeficientes de BC     #\033[m"
+     echo -e "\033[31;1m #        de 50 ciclos do SMNA            #\033[m"
+     echo -e "\033[31;1m #     Caso não seja o 1° ciclo verificar  #\033[m"
+     echo -e "\033[31;1m #    porque não copiou o arquivo anterior  #\033[m"
+     echo -e "\033[31;1m #              ${satbiasOu}               #\033[m"
      echo -e "\033[31;1m #--------------------------------------#\033[m"
 
      if [ -e ${runDir}/${satbiasIn} ];then
@@ -564,7 +568,8 @@ getSatBias ( ){
    if [ ${#FileSatbiasPCOu} -eq 0 ];then
 
      echo -e "\033[31;1m #--------------------------------------#\033[m"
-     echo -e "\033[31;1m #    1° ciclo de assimilação           #\033[m"
+     echo -e "\033[31;1m #    Usando o os coeficientes de BC_PC   #\033[m"
+     echo -e "\033[31;1m #        de 50 ciclos do SMNA            #\033[m"
      echo -e "\033[31;1m #  Caso não seja o 1° ciclo verificar  #\033[m"
      echo -e "\033[31;1m #    porque não copiou o arquivo       #\033[m"
      echo -e "\033[31;1m #          ${satbiasPCOu}         #\033[m"
