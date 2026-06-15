@@ -39,7 +39,9 @@ Versão instalada na Egeon, seguindo os passos abaixo:
    cd ~/SMNA_v3.0.0.t12717/SMG;
    ./config_smg.ksh configure
    ```
-Obs. Caso tenha ou queira mais de uma versão edite arquivo `egeon_paths.conf` e ajustar a variável "nome_smg" para um outro nome desejado. A atual versão está como "SMNA_v3.0.0.t12717/SMG"
+**Obs1.** Caso tenha ou queira mais de uma versão edite arquivo `egeon_paths.conf` e ajustar a variável "nome_smg" para um outro nome desejado. A atual versão está como "SMNA_v3.0.0.t12717/SMG"
+
+**Obs2.:** caso a cópia do repositório não esteja em `/home/${USER}`, ajuste os caminhos das flags: COREGSI, CORELIB e CORECRTM no arquivo `Makefile.conf.egeon-intel` em `SMNA_v3.0.0.t12717/SMG/cptec/gsi/util/global_angupdate/`.
 
 6. Compilação do GSI e BAM:
    ```
@@ -102,5 +104,5 @@ Previsões:
    ```
 Pós:
    ```  
-   ./runPos -t 299 -l 64 -I $data -F $dataINTEG
+   ./runPos -t 299 -l 64 -I 2025050906 -F 2025051406
    ```
