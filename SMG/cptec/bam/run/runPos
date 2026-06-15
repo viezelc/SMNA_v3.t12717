@@ -344,7 +344,8 @@ fi
 #
 set -x
 #if [ ! -e ${POSRUN}/${POSEXE} ]; then
-   cp -vpfr ${HOMEBASE}/pos/exec/${POSEXE} ${POSRUN} 
+   #cp -vpfr ${HOMEBASE}/pos/exec/${POSEXE} ${POSRUN}
+   cp -vpfr ${HOMEBASE}/pos/source/${POSEXE} ${POSRUN}  
 #fi
 set +x
 
