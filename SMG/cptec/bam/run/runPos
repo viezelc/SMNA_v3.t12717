@@ -259,7 +259,8 @@ fi
 case ${hpc_name} in
   egeon)
     if [ -z ${queue} ];then
-      queue=PESQ2
+      #queue=PESQ2
+      queue=batch 
     fi
 ;;
   XC50)
