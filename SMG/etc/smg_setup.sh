@@ -146,8 +146,6 @@ copy_fixed_files(){
      done
    
      filesDataOut=(
-       "WaterNavy.dat" 
-       "TopoNavy.dat"
        "HPRIME.dat"
      )
      for file in "${filesDataOut[@]}";do

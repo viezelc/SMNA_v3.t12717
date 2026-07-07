@@ -121,8 +121,11 @@ constants ( ) {
    export cldRadInfo=${home_gsi_fix}/cloudy_radiance_info.txt
 #   export SatBiasSample=${public_fix}/comgsi_satbias_in
 #   export SatBiasPCSample=${public_fix}/comgsi_satbias_pc_in
-   export SatBiasSample=${public_fix}/gdas1.t00z.abias
-   export SatBiasPCSample=${public_fix}/gdas1.t00z.abias_pc
+# Colocando arquivos de BC do SMNA ver issue 85 do readDiag
+#   export SatBiasSample=${public_fix}/gdas1.t00z.abias
+#   export SatBiasPCSample=${public_fix}/gdas1.t00z.abias_pc
+   export SatBiasSample=${public_fix}/Satbias_out_50ciclos
+   export SatBiasPCSample=${public_fix}/satbias_pc.out_50ciclos
    export ScanInfo=${home_gsi_fix}/global_scaninfo.txt
    export SatBiasAngSample=${home_gsi_fix}/global_satangbias.txt
    export execBCAng=${home_cptec}/bin/global_angupdate
@@ -283,9 +286,10 @@ linkObs ( ){
 # local para ler os dados de datas recentes na operação (ultimos 30 dias)   
 #   local obsDir=${obsDir}:${ncep_ext}/${runDate:0:8}00/dataout/NCEP
 # local para testes com o fomrato do arquivo prepbufr do INPE   
-   local obsDir=/mnt/beegfs/luiz.sapucci/obs_V1.3.3/dataout/${runDate:0:8} 
+#   local obsDir=/mnt/beegfs/luiz.sapucci/obs_V1.3.3/dataout/${runDate:0:8} 
 # local para ler dados salvos em experimentos   
 #   local obsDir=/pesq/dados/das/poper/luiz.sapucci/NCEPdataSMNA/PrepBufr/${runDate}
+   local obsDir=/oper/dados/dboper/raw/arch/mod/ncep/gdas/${runDate:0:4}/${runDate:4:2}/${runDate:6:2}
    
 #   local obsDir=${obsDir}:/lustre_xc50/ioper/data/external/ASSIMDADOS
 #   local obsDir=${obsDir}:/lustre_xc50/joao_gerd/data/${runDate}
