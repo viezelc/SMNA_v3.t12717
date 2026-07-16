@@ -18,6 +18,7 @@
 #
 #   20 Dec 2017 - J. G. de Mattos - Initial Version
 #   Oct 2023 - J. A. Aravequia - Added HPC system identification
+#   16 Jul 2026 - L. F. Sapucci - Adjust for JACI.
 #
 # !REMARKS:
 #   - SMG paths are defined in etc/paths.sh
@@ -59,7 +60,12 @@ detect_hpc_system() {
         export WRAPPER="mpif90"
         export LC_ALL="en_US.UTF-8"
         echo "[INFO] Detected: EGEON Cluster"
-    
+    elif echo "$sys_info" | grep -q "Linux ian"; then
+        export hpc_system="linux"
+        export hpc_name="jaci"
+        export WRAPPER="mpif90"
+        export LC_ALL="en_US.UTF-8"
+        echo "[INFO] Detected: JACI Cluster"	
     else
         echo "[ERROR] Unknown machine: $(hostname)"
         echo "[ACTION] 1) Add the machine to the defined systems in etc/mach/"
