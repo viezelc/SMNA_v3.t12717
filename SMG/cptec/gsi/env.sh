@@ -103,9 +103,9 @@ check_compilers() {
 #---------------------------------------------------------------------------------------------------#
 # Machine-specific Configuration                                                                   #
 #---------------------------------------------------------------------------------------------------#
-echo "[INFO] Loading module environment..."
+echo "[INFO] Loading module environment SAPU..."
 
-if [ "${machine,,}" == "egeon" ]; then
+if [ "${machine,,}" == "egeon" ] ||  [ "${machine,,}" == "jaci" ]; then
     export LC_ALL="en_US.UTF-8"
     module -q purge
     

@@ -98,6 +98,13 @@ detect_hpc_system() {
         export LC_ALL="en_US.UTF-8"
         echo "[INFO] Detected: EGEON Cluster"
     
+    elif echo "$sys_info" | grep -q "Linux ian"; then
+        export hpc_system="linux"
+        export hpc_name="jaci"
+        export WRAPPER="mpif90"
+        export LC_ALL="en_US.UTF-8"
+        echo "[INFO] Detected: JACI Cluster"
+    
     else
         echo "[ERROR] Unknown machine: $(hostname)"
         return 1
@@ -121,6 +128,14 @@ load_env_system() {
 
 
     if [ "${hpc_name}" == "egeon" ]; then
+        module -q purge
+        module load intel/2021.4.0
+        module load mpi/2021.4.0
+        module load impi/2021.4.0
+        module load netcdf/4.7.4
+        module load pnetcdf/1.12.2 netcdf-fortran/4.5.3
+ 
+    elif [ "${hpc_name}" == "jaci" ]; then
         module -q purge
         module load intel/2021.4.0
         module load mpi/2021.4.0

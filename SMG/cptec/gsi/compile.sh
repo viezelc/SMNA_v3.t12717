@@ -144,6 +144,12 @@ detect_machine() {
         export hpc_name="egeon"
         export SUB="egeon"
         echo "[INFO] Detected: EGEON Cluster"    
+	
+    elif echo "$sys_info" | grep -q "Linux ian"; then
+        export hpc_name="egeon"
+        export SUB="egeon"
+        echo "[INFO] Detected: EGEON Cluster"   
+		
     else
         echo "[ERROR] Unknown machine: $(hostname)"
         echo "[ACTION] 1) Add the machine to the defined systems in etc/mach/"
