@@ -107,14 +107,16 @@ echo "[INFO] Loading module environment SAPU..."
 
 if [ "${machine,,}" == "egeon" ] ||  [ "${machine,,}" == "jaci" ]; then
     export LC_ALL="en_US.UTF-8"
-    module -q purge
+    # module -q purge
     
     # Configuration for Intel compiler
     if [ "${compiler,,}" == "intel" ]; then
-        module load intel impi
-        export FC=ifort
-        export F90=ifort
-        export CC=icc
+        module swap  PrgEnv-cray/8.6.0 PrgEnv-intel/8.6.0
+	module load cray-libpals/1.6.1 cray-pals/1.6.1
+	module load cray-netcdf/4.9.0.15
+        export FC=ifx
+        export F90=ifx
+        export CC=icx
         export CXX=icx
         
     # Configuration for GNU compiler

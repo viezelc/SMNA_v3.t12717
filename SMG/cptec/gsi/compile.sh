@@ -146,9 +146,9 @@ detect_machine() {
         echo "[INFO] Detected: EGEON Cluster"    
 	
     elif echo "$sys_info" | grep -q "Linux ian"; then
-        export hpc_name="egeon"
-        export SUB="egeon"
-        echo "[INFO] Detected: EGEON Cluster"   
+        export hpc_name="jaci"
+        export SUB="jaci"
+        echo "[INFO] Detected: JACI Super"   
 		
     else
         echo "[ERROR] Unknown machine: $(hostname)"

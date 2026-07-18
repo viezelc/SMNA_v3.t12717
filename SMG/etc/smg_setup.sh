@@ -410,24 +410,6 @@ compile(){
     fi
   fi
 
-  if [[ ${compang} -eq 1 ]]; then
-    echo "[INFO] Compiling GSI bias correction utility..."
-
-    source ./env.sh ${hpc_name} ${compiler}
-
-    cd ${home_gsi}/util/global_angupdate
-    ln -sf Makefile.conf.${hpc_name}-${compiler} Makefile.conf
-    make -f Makefile clean
-    make -f Makefile
-    if [[ ! -e ${home_gsi}/util/global_angupdate/global_angupdate ]]; then
-      echo "[FAIL] Error: GSI bias correction utility compilation failed."
-      exit 1
-    else  
-      cp -pvfr ${home_gsi}/util/global_angupdate/global_angupdate ${home_cptec}/bin/      
-    fi
-    cp -pfvr ${home_gsi}/util/global_angupdate/global_angupdate ${home_cptec}/bin/global_angupdate
-  fi
-
   if [[ ${compbam} -eq 1 ]]; then
     cd ${home_bam}
     echo "[INFO] Compiling BAM ..."

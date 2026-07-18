@@ -60,10 +60,11 @@ detect_hpc_system() {
         export WRAPPER="mpif90"
         export LC_ALL="en_US.UTF-8"
         echo "[INFO] Detected: EGEON Cluster"
+	
     elif echo "$sys_info" | grep -q "Linux ian"; then
         export hpc_system="linux"
         export hpc_name="jaci"
-        export WRAPPER="mpif90"
+        export WRAPPER="ftn"
         export LC_ALL="en_US.UTF-8"
         echo "[INFO] Detected: JACI Cluster"	
     else
