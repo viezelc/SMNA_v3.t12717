@@ -42,29 +42,31 @@ Seguir os passos:
    git lfs install;
    git lfs pull
    ```
-5. Pasta cmake: criar o diretório `cmake` em SMG/utils:
-   ```
-   cd /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/utils
-   mkdir cmake
-   ```
-   
-6. Configuração do SMNA:
+ 
+5. Configuração do SMNA:
    ```
    cd /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG;
    ./config_smg.ksh configure
    ```
 **Obs1.** Caso tenha ou queira mais de uma versão edite arquivo `jaci_paths.conf` e ajustar a variável "nome_smg" para um outro nome desejado. A atual versão está como "SMNA_v3.0.0.t12717/SMG"
 
-❗Verificar a obs 2 no processo de adequação (AQUI precisa ser criado o arquivo Makefile.conf.jaci-intel!!!!! além disso ajustar os caminhos das flags )
-**Obs2.:** caso a cópia do repositório não esteja em `/home/${USER}`, ajuste os caminhos das flags: COREGSI, CORELIB e CORECRTM no arquivo `Makefile.conf.egeon-intel` em `SMNA_v3.0.0.t12717/SMG/cptec/gsi/util/global_angupdate/`.
-
 6. Compilação do GSI e BAM:
    ```
+   remova de seu login os modules load setados para que a lista seja a mais proxima da original da maquina
+   vim .bashrc.jaci
+ 
+   e remova a chamada do conda e comente os modules load
+ 
+   comente
+   o module purge || true
+
+   veja como em https://github.com/viezelc/SMNA_v3.t12717/issues/18
+ 
    cd /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG;
-   nohup ./config_smg.ksh compile > compile1.log &
+   ./config_smg.ksh compile 
    ```
 
-7. Testcase:
+7. Testcase para o caso de completar a compilação:
    ```
    cd /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG;
    ./config_smg.ksh testcase
@@ -73,14 +75,14 @@ Seguir os passos:
 
 8. Execução do pré na rodada anterior para preparação do ciclo de assimilação:
    ```
-   cd /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/cptec/bam/run;
+   cd ~/SMNA_v3.0.0.t12717/SMG/cptec/bam/run;
    ./runPre -t 299 -l 64 -I 2025050900 -n 0 -O -T -G -Gt Netcdf -s
    ```
 
    OBS. Verificar se os arquivos necessarios serão corretamente encontrados para essa data: 2025050900. Caso dê erro por falta de arquivos uma copia esta no diretorio abaixo.
-   Copia para seu `/p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam/pre/datain/` 
+   Copia para seu /mnt/beegfs/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam/pre/datain/ 
    ```
-   ls /p/projetos/monan_das/public/testcaseSMNA/pre/datain
+   ls /mnt/beegfs/caroline.viezel/SMNA_v3.0.0.t12717/SMG/datainout/bam/pre/datain/
    ```
    
 9. Rodar o Modelo para essa data anterior para preparar os FirstGuess do inicio do ciclo de assimilação:
@@ -90,34 +92,6 @@ Seguir os passos:
 
 10. Testar o ciclo de assimilação no SMNA  
    ```
-   cd /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/run;
+   cd ~/SMNA_v3.0.0.t12717/SMG/run;
    ./run_cycle.sh -t 299 -l 64 -gt 299 -p CPT -I 2025050906 -F 2025050912
-   ```
-
-11. ☑️ Arquivos de saída:
-    
-    ARQUIVOS setout modelo ->  
-    modelo: /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam/model/DAS
-    
-    ARQUIVOS datarun GSI ->  
-    GSI: /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/datarun/gsi
-    
-    RESULTADOS ->  
-    Saídas do GSI: /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/gsi/dataout  
-    Saídas do modelo: /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam/model/dataout/TQ0299L064/DAS
-
-12. Pós-processamento das previsões (rodar o Pós):  
-    Obs.: verificar se o arquivo `POSTIN-GRIB.template` encontra-se no diretório `SMG/cptec/bam/run`. Este arquivo foi adicionado recentemente e pode ser encontrado em https://projetos.cptec.inpe.br/projects/smna/repository/revisions/162/entry/branch/SMNA_v3.0.x/SMG/cptec/bam/run/POSTIN-GRIB.template
-
-   ↪️ Exemplo para previsão de 5 dias: ⬇️
-   ```
-   cd /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/cptec/bam/run
-   ```
-Previsões:
-   ``` 
-   ./runModel -t 299 -l 64 -I 2025050906 -F 2025051406 -ts 6 -py CPT -px CPT
-   ```
-Pós:
-   ```  
-   ./runPos -t 299 -l 64 -I 2025050906 -F 2025051406
    ```
