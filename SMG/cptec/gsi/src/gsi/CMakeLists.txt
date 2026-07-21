@@ -1,5 +1,27 @@
 cmake_minimum_required(VERSION 3.19)
 
+# ==============================================================================
+# Configuração para ambiente Cray
+# (Só roda se o subprojeto for compilado de forma independente / standalone)
+# ==============================================================================
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    if(DEFINED ENV{CRAY_MPICH_DIR} OR DEFINED ENV{CRAYPE_DIR} OR DEFINED ENV{CRAY_CPU_TARGET})
+        message(STATUS "Ambiente Cray detectado no subprojeto standalone...")
+
+        find_program(CRAY_CC cc REQUIRED)
+        find_program(CRAY_FTN ftn REQUIRED)
+
+        set(CMAKE_C_COMPILER "${CRAY_CC}" CACHE STRING "C compiler" FORCE)
+        set(CMAKE_Fortran_COMPILER "${CRAY_FTN}" CACHE STRING "Fortran compiler" FORCE)
+
+        set(MPI_C_COMPILER "${CRAY_CC}" CACHE STRING "MPI C compiler" FORCE)
+        set(MPI_Fortran_COMPILER "${CRAY_FTN}" CACHE STRING "MPI Fortran compiler" FORCE)
+
+        set(MPI_C_FOUND TRUE CACHE BOOL "" FORCE)
+        set(MPI_Fortran_FOUND TRUE CACHE BOOL "" FORCE)
+    endif()
+endif()
+
 project(gsi
         VERSION 1.0.0
         LANGUAGES C Fortran)
@@ -17,11 +39,12 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "^(Debug|Release|RelWithDebInfo|MinSizeRel)$")
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|Intel|Clang|AppleClang)$")
+# Aceita IntelLLVM tanto para C quanto para Fortran
+if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|Intel|IntelLLVM|Clang|AppleClang)$")
   message(WARNING "${CMAKE_C_COMPILER_ID} is not supported.")
 endif()
 
-if(NOT CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU|Intel)$")
+if(NOT CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU|Intel|IntelLLVM)$")
   message(WARNING "${CMAKE_Fortran_COMPILER_ID} is not supported.")
 endif()
 
@@ -123,10 +146,13 @@ list(APPEND GSI_C_defs
   funder
   "FortranLlong=long long")
 
-list(APPEND GSI_Fortran_defs _REAL8_)
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
+list(APPEND GSI_Fortran_defs _REAL8_ useMPI MPI)
+
+# Atualizado para tratar Intel e IntelLLVM identicamente
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel|IntelLLVM)$")
   list(APPEND GSI_Fortran_defs POUND_FOR_STRINGIFY)
 endif()
+
 if(USE_GSDCLOUD)
   list(APPEND GSI_Fortran_defs RR_CLOUDANALYSIS)
 endif()
@@ -178,7 +204,7 @@ add_library(gsi STATIC)
 add_library(${PROJECT_NAME}::gsi ALIAS gsi)
 set_target_properties(gsi PROPERTIES Fortran_MODULE_DIRECTORY "${module_dir}")
 target_include_directories(gsi PUBLIC $<BUILD_INTERFACE:${module_dir}>
-                                      $<INSTALL_INTERFACE:include/gsi>)
+                                     $<INSTALL_INTERFACE:include/gsi>)
 target_link_libraries(gsi PUBLIC gsi_c_obj)
 target_link_libraries(gsi PUBLIC gsi_fortran_obj)
 if(OpenMP_Fortran_FOUND)

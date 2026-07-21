@@ -1,15 +1,38 @@
 # This is the main CMake file for NCEPLIBS-sigio.
 #
 # Mark Potts, Kyle Gerheiser, Ed Hartnett
+
 cmake_minimum_required(VERSION 3.15)
 
-# Get the version from the VERSION file.
 file(STRINGS "VERSION" pVersion)
 
 project(
   sigioBAMMod
   VERSION ${pVersion}
   LANGUAGES Fortran)
+
+# ==============================================================================
+# Configuração de MPI em ambiente Cray
+# ==============================================================================
+option(ENABLE_MPI "Enable MPI support in sigioBAMMod" ON)
+
+if(ENABLE_MPI)
+  add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-DuseMPI>)
+
+  # Em ambiente Cray MPICH
+  if(DEFINED ENV{CRAY_MPICH_DIR})
+    message(STATUS "Configurando MPICH do Cray via CRAY_MPICH_DIR: $ENV{CRAY_MPICH_DIR}")
+    include_directories("$ENV{CRAY_MPICH_DIR}/include")
+    link_directories("$ENV{CRAY_MPICH_DIR}/lib")
+  elseif(DEFINED ENV{MPICH_DIR})
+    message(STATUS "Configurando MPICH via MPICH_DIR: $ENV{MPICH_DIR}")
+    include_directories("$ENV{MPICH_DIR}/include")
+    link_directories("$ENV{MPICH_DIR}/lib")
+  else()
+    find_package(MPI REQUIRED Fortran)
+    include_directories(${MPI_Fortran_INCLUDE_PATH})
+  endif()
+endif()
 
 include(GNUInstallDirs)
 
@@ -33,8 +56,7 @@ if(ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-# Generate docs if desired.
 IF(ENABLE_DOCS)
   FIND_PACKAGE(Doxygen REQUIRED)
 ENDIF()
-ADD_SUBDIRECTORY(docs)  
+ADD_SUBDIRECTORY(docs)
