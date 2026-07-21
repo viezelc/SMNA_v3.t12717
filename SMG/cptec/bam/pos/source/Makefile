@@ -34,7 +34,7 @@ all:
 
 	(cd w3lib-1.4;$(MAKE) -f Makefile.$@)
 	(cd .;$(MAKE) -f Makefile.$@)
-	(mv PostGrib $(PATH2)/PostGrib)
+	(mkdir -p $(PATH2); mv PostGrib $(PATH2)/PostGrib)
 	(rm  -f Makefile.$@ )
 
 # We need a "dev-all" target that builds the docs plus binaries, but

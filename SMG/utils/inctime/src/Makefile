@@ -29,6 +29,14 @@ srcdir = ./
 
 # preprocessor, compilers, linker & archiver
 #
+ifeq ($(ARCH),IntelLLVM)
+   FPP = ifx -fpp
+   CC  = icx
+   FC  = ifx
+   LD  = ifx 
+   AR  = ar
+endif
+
 ifeq ($(ARCH),Darwin_intel)
    FPP = gcc
    CC  = gcc

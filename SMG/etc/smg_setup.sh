@@ -422,9 +422,9 @@ compile(){
     echo "[INFO] Compiling inctime utility ..."
     echo "[INFO] PATH ${home_bam}"
     # This is just to ensure the intel env is loaded
-    module swap gnu9/9.4.0 intel/2021.4.0
+    module swap PrgEnv-cray/8.6.0 PrgEnv-intel/8.6.0
     cd ${util_inctime}/src
-    export ARCH=Darwin_intel
+    export ARCH=IntelLLVM
     make
     if [[ ! -e ${util_inctime}/src/inctime ]]; then
       echo "[FAIL] Error: inctime utility compilation failed."

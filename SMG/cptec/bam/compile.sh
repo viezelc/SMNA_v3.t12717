@@ -136,12 +136,15 @@ load_env_system() {
         module load pnetcdf/1.12.2 netcdf-fortran/4.5.3
  
     elif [ "${hpc_name}" == "jaci" ]; then
-        module -q purge
-        module load intel/2021.4.0
-        module load mpi/2021.4.0
-        module load impi/2021.4.0
-        module load netcdf/4.7.4
-        module load pnetcdf/1.12.2 netcdf-fortran/4.5.3
+        module swap  PrgEnv-cray/8.6.0 PrgEnv-intel/8.6.0
+        module load cray-libpals/1.6.1 cray-pals/1.6.1
+	module load cray-hdf5/1.14.3.3
+        module load cray-netcdf/4.9.0.15
+        export FC=ifx
+        export F90=ifx
+        export CC=icx
+        export CXX=icx
+        module load cray-parallel-netcdf/1.12.3.15
       
     elif [ "${hpc_name}" == "xc50" ]; then
         . /opt/modules/default/etc/modules.sh
