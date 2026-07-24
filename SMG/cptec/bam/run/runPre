@@ -304,6 +304,7 @@ walltime=${walltime:-00:45:00}
 # Set specific queue for each HPC system if not already defined
 case ${hpc_name} in
   egeon) queue=${queue:-PESQ1} ;;
+  jaci) queue=${queue:-pesqmidi} ;;
   XC50) queue=${queue:-pesq} ;;
 esac
 
@@ -521,6 +522,111 @@ case ${hpc_name} in
              qstatus=$?
          fi
          
+   ;;
+   jaci2)
+         {
+            printf '%s\n' '#!/bin/bash'
+            printf '%s\n' '#SBATCH --output='"${dirExec}/Out.MPI${MPITasks}"
+            printf '%s\n' '#SBATCH --error='"${dirExec}/Err.MPI${MPITasks}"
+            printf '%s\n' '#SBATCH --time='${walltime}
+            printf '%s\n' '#SBATCH --ntasks='${MPITasks}
+            printf '%s\n' '#SBATCH --ntasks-per-node='${TasksPerNode}
+            printf '%s\n' '#SBATCH --cpus-per-task='${ThreadsPerMPITask}
+            printf '%s\n' '#SBATCH --job-name='${queue_name}
+            printf '%s\n' '#SBATCH --partition='${queue}
+            printf '\n'
+
+            printf '%s\n' 'set -euo pipefail'
+            printf '%s\n' 'export OMP_NUM_THREADS=1'
+            printf '%s\n' 'export KMP_AFFINITY=verbose,granularity=thread,compact,1'
+            printf '%s\n' 'export MPICH_NO_BUFFER_ALIAS_CHECK=TRUE'
+            printf '%s\n' 'export I_MPI_COMPATIBILITY=4'
+            printf '%s\n' 'export MP_EUIDEVELOP=min'
+            printf '%s\n' 'export KMP_STACKSIZE=128m'
+            printf '%s\n' 'ulimit -s unlimited'
+            printf '%s\n' 'ulimit -v unlimited'
+            printf '\n'
+
+            printf '%s\n' 'module purge'
+            printf '%s\n' 'module load intel/2021.4.0'
+            printf '%s\n' 'module load mpi/2021.4.0 impi/2021.4.0'
+            printf '%s\n' 'module load netcdf/4.7.4 pnetcdf/1.12.2 netcdf-fortran/4.5.3'
+            printf '%s\n' 'module list'
+            printf '\n'
+
+            printf '%s\n' 'cd '"${dirExec}"
+            printf '%s\n' "mpirun -np \${SLURM_NTASKS} ./${preEXEC} > saida_${labelOut}.txt"
+            printf '%s\n' 'rm -f Dump.* > /dev/null 2>&1'
+         } > "${dirExec}/pre.qsb"
+
+         # submit Pre-process
+         echo -ne "\033[34;1m Running PreBAM JACI \033[m"
+         cd "${dirExec}"
+     
+         if [[ "${DRYRUN}" == true ]]; then
+             echo "echo "[DRYRUN] sbatch --wait ${dirExec}/pre.qsb""
+             qstatus=0
+         else
+             echo "PID=$(sbatch --wait "${dirExec}/pre.qsb"; exit ${PIPESTATUS[0]})"
+             qstatus=$?
+         fi
+         
+   ;;
+   jaci)
+         {
+            printf '%s\n' '#!/bin/bash'
+            printf '%s\n' '#PBS -V'
+            printf '%s\n' '#PBS -j oe'
+            printf '%s\n' '#PBS -S /bin/bash'
+            printf '%s\n' '#PBS -o '"${dirExec}/Out.MPI${MPITasks}"
+            printf '%s\n' '#PBS -l walltime='${walltime}
+            printf '%s\n' '#PBS -l select='${Nodes}':ncpus='${MaxCoresPerNode}':mpiprocs='${MaxCoresPerNode}
+            printf '%s\n' '#PBS -N '"${queue_name}"
+            printf '%s\n' '#PBS -q '"${queue}"
+	    printf '%s\n' '#PBS -l place=scatter:excl'
+            #printf '%s\n' '#PBS -A '"${QUOTA}"
+            printf '\n'
+
+	    printf '%s\n' 'set -euo pipefail'
+            printf '%s\n' 'export OMP_NUM_THREADS=1'
+            printf '%s\n' 'export KMP_AFFINITY=verbose,granularity=thread,compact,1'
+            printf '%s\n' 'export MPICH_NO_BUFFER_ALIAS_CHECK=TRUE'
+            printf '%s\n' 'export I_MPI_COMPATIBILITY=4'
+            printf '%s\n' 'export MP_EUIDEVELOP=min'
+            printf '%s\n' 'export KMP_STACKSIZE=128m'
+            printf '%s\n' 'ulimit -s unlimited'
+            printf '%s\n' 'ulimit -v unlimited'
+            printf '\n'
+
+	    printf '%s\n' 'module swap  PrgEnv-cray/8.6.0 PrgEnv-intel/8.6.0'
+	    printf '%s\n' 'module load cray-libpals/1.6.1 cray-pals/1.6.1'
+	    printf '%s\n' 'module load cray-hdf5/1.14.3.3'
+	    printf '%s\n' 'module load cray-netcdf/4.9.0.15'
+            printf '%s\n' 'module list'
+            printf '\n'
+
+
+            printf '%s\n' 'set -euo pipefail'
+            #printf '%s\n' '. /opt/modules/default/etc/modules.sh'
+            #printf '%s\n' 'module load craype-x86-skylake'
+            printf '%s\n' 'export OMP_WAIT_POLICY=PASSIVE'
+            printf '%s\n' 'cd '"${dirExec}"
+	    printf '%s\n' "time mpirun -np \${NCPUS} ./${preEXEC} > saida_${labelOut}.txt"
+            printf '%s\n' 'rm -f Dump.* > /dev/null 2>&1'
+         } > "${dirExec}/pre.pbs"
+         
+         # submit Job
+         echo -ne "\033[34;1m Running BAM \033[m"
+     
+         cd ${dirExec}
+     
+         if [[ "${DRYRUN}" == true ]]; then
+             echo "[DRYRUN] qsub -W block=true ${dirExec}/pre.pbs"
+             qstatus=0
+         else
+             PID=$(qsub -W block=true "${dirExec}/pre.pbs"; exit ${PIPESTATUS[0]})
+             qstatus=$?
+         fi
    ;;
    XC50)
          {

@@ -277,7 +277,7 @@ function getSST() {
   detect_hpc_system
   
   case "${hpc_name}" in
-    egeon)
+    egeon | jaci)
       local preDataIn=( \
         "${SUBTBASE}/pre/datain" \
         "${dadosExternos}/%y4/%m2/%d2/%h2" \
@@ -403,7 +403,7 @@ getSoilFiles(){
   detect_hpc_system
   case ${hpc_name} in
 
-    egeon) local preDataIn=( \
+    egeon | jaci) local preDataIn=( \
                    ${SUBTBASE}/pre/datain \
                    ${dadosUmidSolo}/%Y/%m/%d/%H \
                   )
@@ -429,7 +429,7 @@ getSoilFiles(){
   ### $( ${inctime} ${runDate} +0h ${PREIN}/${smcFile} )
   case ${hpc_name} in
 
-    egeon) local count=0
+    egeon | jaci) local count=0
            while [ ${count} -le 3 ];do
              for path in ${preDataIn[@]};do
                 local file=`date -u +${path}/${smcFile} -d "${LABEL:0:8} ${HH} +0 hours"`
@@ -483,7 +483,7 @@ getAnlNCEP() {
 
   detect_hpc_system
   case "${hpc_name}" in
-    egeon)
+    egeon | jaci)
       local YY="${runDate:0:4}"
       local MM="${runDate:4:2}"
       local DD="${runDate:6:2}"
