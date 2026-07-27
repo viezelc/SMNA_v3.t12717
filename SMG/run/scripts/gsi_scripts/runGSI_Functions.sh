@@ -10,6 +10,7 @@
 #
 # !REVISION HISTORY:
 # 20 Ago 2018 - J. G. de Mattos - Initial Version
+# 27 Jul 2026 - L. F. Sapucci - Adicionado uma função especifica para os dados do Fluxo do INPE
 #
 # !REMARKS:
 #
@@ -273,34 +274,23 @@ ParseOpts( ) {
 }
 
 #-----------------------------------------------------------------------------#
-# Choose and link/copy observations from ObsDir to GSI dir run
+# Choose and link/copy observations from NCEP to GSI dir run
 #-----------------------------------------------------------------------------#
-linkObs ( ){
+linkObsNCEP ( ){
    local runDate=${1}
    local runDir=${2}
 
    local verbose=true
    
-   # add bufr path in EGEON
-   local obsDir=${ncep_ext}/${runDate:0:4}/${runDate:4:2}/${runDate:6:2}
-# local para ler os dados de datas recentes na operação (ultimos 30 dias)   
-#   local obsDir=${obsDir}:${ncep_ext}/${runDate:0:8}00/dataout/NCEP
-# local para testes com o fomrato do arquivo prepbufr do INPE   
-#   local obsDir=/mnt/beegfs/luiz.sapucci/obs_V1.3.3/dataout/${runDate:0:8} 
-# local para ler dados salvos em experimentos   
-#   local obsDir=/pesq/dados/das/poper/luiz.sapucci/NCEPdataSMNA/PrepBufr/${runDate}
+   # local onde estão os dados prepbufr do NCEP
    local obsDir=/oper/dados/dboper/raw/arch/mod/ncep/gdas/${runDate:0:4}/${runDate:4:2}/${runDate:6:2}
    
-#   local obsDir=${obsDir}:/lustre_xc50/ioper/data/external/ASSIMDADOS
-#   local obsDir=${obsDir}:/lustre_xc50/joao_gerd/data/${runDate}
-#   local obsDir=${obsDir}:/lustre_xc50/joao_gerd/data/obs/${runDate:0:6}/${runDate:6:4}
-
    local IFS=":"; read -a obsPath < <(echo "${obsDir}")
    local nPaths=${#obsPath[@]}
    echo "@linkObs : obsPath : " $obsPath
    echo "obsGSI : "${obsGSI}
    local IFS=" "
-   local names=$(sed -n '/OBS_INPUT::/,/::/{/OBS_INPUT/d;/::/d;/^!/d;p}' ${parmGSI} | awk '{print $1}' | sort -u | xargs)
+   local names=$(sed -n '/OBS_INPUT::/,/::/{/OBS_INPUT/d;/::/d;/^!/d;p}' ${parmGSI} | awk '{print $1}' | sort -u | grep NCEP | xargs)
    echo "parmGSI : names : " $names
    count=0
    for name in ${names};do
@@ -351,7 +341,90 @@ linkObs ( ){
       done
 
    done
-   echo -e "\033[34;1m Found\033[m\033[32;1m ${count}\033[m\033[34;1m observation files to use\033[m"
+   
+   if [ $count -eq 4 ]; then
+     echo -e "\033[34;1m Found\033[m\033[32;1m ${count}\033[m\033[34;1m observation files from NCEP to use\033[m"
+   else
+     echo "falta dados do NCEP.. esperar e rodar novamente..." ; 
+     exit 1; 
+   fi
+}
+
+#-----------------------------------------------------------------------------#
+# Choose and link/copy observations from INPE to GSI dir run
+#-----------------------------------------------------------------------------#
+linkObsINPE ( ){
+   local runDate=${1}
+   local runDir=${2}
+
+   local verbose=true
+   
+   #   local onde estão os dados prepbufr operacionais recebido pelo INPE 
+   local obsDir=/oper/dados/dboper/raw/arch/mod/cptec/gdas/${runDate:0:4}/${runDate:4:2}/${runDate:6:2}
+   
+   local IFS=":"; read -a obsPath < <(echo "${obsDir}")
+   local nPaths=${#obsPath[@]}
+   echo "@linkObs : obsPath : " $obsPath
+   echo "obsGSI : "${obsGSI}
+   local IFS=" "
+   local names=$(sed -n '/OBS_INPUT::/,/::/{/OBS_INPUT/d;/::/d;/^!/d;p}' ${parmGSI} | awk '{print $1}' | sort -u | grep INPE |  xargs)
+   echo "parmGSI : names : " $names
+   count=0
+   for name in ${names};do
+      i=0
+      IsObsList=$(grep -iw ${name} ${obsGSI} | wc -l)
+      if [ $IsObsList -eq 0 ]; then
+         echo -e " " 
+         echo $name" nÃ£o estÃ¡ na lista de "$obsGSI;
+         echo -e " "
+         continue                                     # skip to the next name in $names
+      fi
+      while [ $i -le $((nPaths-1)) ];do
+         filemask=${obsPath[$i]}/$(grep -iw ${name} ${obsGSI} | awk '{print $1}'; exit ${PIPESTATUS[0]} )
+         if [ $? -eq 0 ];then
+            file=$(${inctime} ${runDate} +0h ${filemask})
+            ## change -e to -f avoid that cases when grep return empty and the if test the whole obsPath 
+            #  which causes a entire directory copy to $rundir/$name ....
+            if [ -f ${file} ];then
+               cp -pfr  ${file} ${runDir}/${name} 2> /dev/null
+
+               if [ $? -eq 0 ];then
+                  echo -en "\033[34;1m[\033[m\033[32;1m OK\033[m"
+                  count=$((count + 1))
+               else
+                  echo -en "\033[34;1m[\033[m\033[31;1m FAIL\033[m"
+               fi
+
+               if [ ${verbose} == 'true' ];then
+                  echo -e "\033[34;1m ]\033[m\033[34;1m link\033[m\033[37;1m ${name}\033[m @ [ ${file} ]" 
+               else
+                  echo -e "\033[34;1m ]\033[m\033[34;1m link\033[m\033[37;1m ${name}\033[m"
+               fi
+
+               break
+
+            elif [ $i -eq $((nPaths-1)) ];then
+               echo -e " "
+               echo -e "\033[31;1m File not found \033[m\033[34;1m $(basename ${file})\033[m\033[31;1m\033[m"
+               echo -e " "
+            fi
+         else
+            echo -e " "
+            echo -e "\033[31;1m Dont seach for \033[m\033[34;1m ${name}\033[m\033[31;1m observation file \033[m"
+            echo -e "\033[31;1m Observation not included in\033[m\033[34;1m ${obsGSI}\033[m\033[31;1m file ! \033[m"
+            echo -e " "
+         fi
+         i=$((i+1))
+      done
+
+   done
+   
+   if [ $count -eq 1 ]; then
+     echo -e "\033[34;1m Found\033[m\033[32;1m ${count}\033[m\033[34;1m observation files from INPE to use\033[m"
+   else
+     echo "falta dados do INPE.. esperar e rodar novamente..."; 
+     exit 0; 
+   fi
 }
 
 #-----------------------------------------------------------------------------#
@@ -648,7 +721,7 @@ case ${hpc_name} in
 #SBATCH --nodes=${Nodes}
 #SBATCH --time=${WallTime}
 #SBATCH --ntasks=${MTasks}
-#SBATCH --job-name=GSI-SMNA
+#SBATCH --job-name=GSIdaCPT
 #SBATCH --mem=480G
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=${Queue}
