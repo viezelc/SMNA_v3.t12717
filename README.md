@@ -80,9 +80,9 @@ Seguir os passos:
    ```
 
    OBS. Verificar se os arquivos necessarios serão corretamente encontrados para essa data: 2025050900. Caso dê erro por falta de arquivos uma copia esta no diretorio abaixo.
-   Copia para seu /mnt/beegfs/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam/pre/datain/ 
+   Copia para seu /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam/pre/datain/ 
    ```
-   ls /mnt/beegfs/caroline.viezel/SMNA_v3.0.0.t12717/SMG/datainout/bam/pre/datain/
+   ls /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam/pre/datain/
    ```
    
 9. Rodar o Modelo para essa data anterior para preparar os FirstGuess do inicio do ciclo de assimilação:
@@ -92,6 +92,6 @@ Seguir os passos:
 
 10. Testar o ciclo de assimilação no SMNA  
    ```
-   cd ~/SMNA_v3.0.0.t12717/SMG/run;
+   cd /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/run;
    ./run_cycle.sh -t 299 -l 64 -gt 299 -p CPT -I 2025050906 -F 2025050912
    ```

@@ -89,7 +89,7 @@ subwrd() {
 # Set script's local directory
 LOCALDIR=$(dirname $(readlink -e ${0})) 
 #source ${LOCALDIR}
-source /home/${USER}/SMNA_v3.0.0.t12717/SMG/cptec/bam/run/EnvironmentalVariables_Model
+source /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/cptec/bam/run/EnvironmentalVariables_Model
 
 # Check for command-line arguments, if none, show help
 if [ $# -eq 0 ]; then
@@ -215,6 +215,7 @@ walltime=${walltime:-02:00:00}
 case ${hpc_name} in
 #  egeon) queue=${queue:-PESQ1} ;;
   egeon) queue=${queue:-batch} ;;
+  jaci) queue=${queue:-pesqmidi } ;;
   XC50) queue=${queue:-pesq} ;;
 esac
 
@@ -266,6 +267,12 @@ fi
 #  - CoresPerNode: Set the total number of cores per node
 case ${hpc_name} in
     egeon)
+        MPITasks=${MPITasks:-64}
+        TasksPerNode=${TasksPerNode:-16}
+        CoresPerNode=${CoresPerNode:-128}
+        MaxCoresPerNode=${CoresPerNode:-128}
+        ;;
+    jaci)
         MPITasks=${MPITasks:-64}
         TasksPerNode=${TasksPerNode:-16}
         CoresPerNode=${CoresPerNode:-128}
@@ -480,7 +487,7 @@ sed  -e "s;#TRUNC#;${TRC};g" \
 
 
 #
-# BUILD SCRIPT TO SUBMIT BAM MODEL TO RUN IN EGEON or XC50
+# BUILD SCRIPT TO SUBMIT BAM MODEL TO RUN IN EGEON or XC50 or JACI
 #
 
 
@@ -538,6 +545,55 @@ EOF1
     PID=$(sbatch --wait ${BAMSCP}; exit ${PIPESTATUS[0]})
     qstatus=$?
   ;;
+  jaci) cat << EOF1 > ${BAMSCP}
+#!/bin/bash
+#PBS -o ${BAMRUN}/setout/Out.model.${PREFX}.${LABELI}.${tmstp}.MPI${MPITasks}.out
+#PBS -j oe
+#PBS -l walltime=02:00:00
+#PBS -l select=1:ncpus=128:mpiprocs=128
+#PBS -V
+#PBS -S /bin/bash
+#PBS -N BAM299
+#PBS -q pesqmidi 
+#PBS -l place=scatter:excl
+
+# cd $PBS_O_WORKDIR
+cd ${BAMRUN}
+pwd
+
+####
+# Bind your OpenMP threads
+export OMP_NUM_THREADS=\$SLURM_CPUS_PER_TASK
+export KMP_AFFINITY=verbose,granularity=thread,compact,1
+set -euo pipefail
+export OMP_NUM_THREADS=1
+export MPICH_NO_BUFFER_ALIAS_CHECK=TRUE
+export I_MPI_COMPATIBILITY=4
+export MP_EUIDEVELOP=min
+export KMP_STACKSIZE=128m
+#
+ulimit -s unlimited
+
+module swap PrgEnv-cray/8.6.0 PrgEnv-intel/8.6.0
+module load cray-libpals/1.6.1 cray-pals/1.6.1
+module load cray-hdf5/1.14.3.3
+module load cray-netcdf/4.9.0.15
+module load cray-parallel-netcdf/1.12.3.15
+module list
+
+####
+echo "time mpirun -np \${NCPUS} ${BAMRUN}/$(basename ${BAMEXE}) > ${BAMLOG} 2>&1 "
+time mpirun -np \${NCPUS}  ${BAMRUN}/$(basename ${BAMEXE}) > ${BAMLOG}
+
+EOF1
+   # submit Pre-process
+    echo -ne "\033[34;1m Running BAM \033[m"
+
+    cd ${BAMRUN}
+
+    PID=$(qsub -W block=true ${BAMSCP}; exit ${PIPESTATUS[0]})
+    qstatus=$?
+  ;;
   xc50) cat << EOF > ${BAMSCP}
 #!/bin/bash
 #PBS -o ${BAMRUN}/setout/Out.model.${PREFX}.${LABELI}.${tmstp}.MPI${MPITasks}.out
@@ -549,7 +605,6 @@ EOF1
 #PBS -N ${queue_name}
 #PBS -q ${queue}
 #PBS -A ${QUOTA}
-
 
 # bypass the buffer aliasing error checking in MPI collective calls.
 export MPICH_NO_BUFFER_ALIAS_CHECK=1
