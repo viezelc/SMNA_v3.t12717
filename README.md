@@ -75,7 +75,7 @@ Seguir os passos:
 
 8. Execução do pré na rodada anterior para preparação do ciclo de assimilação:
    ```
-   cd ~/SMNA_v3.0.0.t12717/SMG/cptec/bam/run;
+   cd  /p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/cptec/bam/run;
    ./runPre -t 299 -l 64 -I 2025050900 -n 0 -O -T -G -Gt Netcdf -s
    ```
 
