@@ -118,30 +118,6 @@ fi
 
 #
 #-----------------------------------------------------------#
-# Copy GSI Angle update exec file to RunDir
-#
-if [ -e ${execBCAng} ];then
-  file=$(basename ${execBCAng})
-  cp -pfr ${execBCAng} ${RunDir}/${file}
-  chmod +x  ${RunDir}/${file}
-  if [ $? -ne 0 ];then
-    echo -e ""
-    echo -e "\033[34;1m Copy failed !\033[m"
-    echo -e "\033[34;1m trying copy ${execBCAng} to ${RunDir}\033[m"
-    echo -e ""
-    exit 1
-  fi
-else
-  echo -e "\033[34;1m[\033[m\033[31;1m Falhou \033[m\033[34;1m]\033[m"
-  echo -e "\033[31;1m !!! Arquivo Nao Encontrado !!! \033[m"
-  echo -e "\033[31;1m ${execBCAng} \033[m"
-  rm -fr ${RunGSI}
-  exit 1
-fi
-
-
-#
-#-----------------------------------------------------------#
 # link observations to be used by GSI (only for multi obs runs)
 #
 

@@ -171,7 +171,10 @@ SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]}")"
 RootDir="$(dirname "$SCRIPT_PATH")"
 
 # Assign necessary paths
-assign DIRGSI "$(pwd)"
+#assign DIRGSI "$(pwd)"
+# Solucao temporaria para a maquina JACI - Nao encontra a pasta com as libs do GSI ao executar qsub do GSI
+EXGSI="/p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/cptec/gsi"
+assign DIRGSI "${EXGSI}"
 assign DIRLIB "${DIRGSI}/libsrc"
 assign install_dir "${DIRGSI}"
 

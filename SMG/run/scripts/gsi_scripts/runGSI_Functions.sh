@@ -94,6 +94,25 @@ constants ( ) {
         export MPICH_PTL_UNEX_EVENTS=50000
         export MPICH_PTL_OTHER_EVENTS=2496
     ;;
+    jaci)
+        export MaxCoresPerNode=60
+        export MTasks=120                     # Number of Processors
+        export ThreadsPerMPITask=1             # Number of cores hosting OpenMP threads
+        export TasksPerNode=$((${MaxCoresPerNode}/${ThreadsPerMPITask})) # Number of Processors used by each MPI tasks
+        export PEs=$((${MTasks}/${ThreadsPerMPITask}))
+        export Nodes=$(((${MTasks}+${MaxCoresPerNode}-1)/${MaxCoresPerNode}))
+        #export Queue=PESQ1
+        #export Queue=PESQ2
+	export Queue=pesqmidi
+        export WallTime=01:00:00
+        export BcCycles=0
+
+        # MPI environmental variables
+        export MPICH_UNEX_BUFFER_SIZE=100000000
+        export MPICH_MAX_SHORT_MSG_SIZE=4096
+        export MPICH_PTL_UNEX_EVENTS=50000
+        export MPICH_PTL_OTHER_EVENTS=2496
+    ;;
     XC50)
        export MaxCoresPerNode=40
        export MPITasks=120                    # Number of Processors
@@ -680,6 +699,51 @@ EOF
     cd ${runDir}
 
     PID=$(sbatch -W  gsi.qsb; exit ${PIPESTATUS[0]})
+  ;;
+  jaci)
+     cat << EOF > ${runDir}/gsi.qsb
+#!/bin/bash
+#PBS -S /bin/bash
+#PBS -l walltime=${WallTime}
+#PBS -l select=${Nodes}:ncpus=${MTasks}:mpiprocs=${MTasks}
+#PBS -N GSI-SMNA
+#PBS -q ${Queue}
+#PBS -l place=scatter:excl
+
+# Enable ro debug after run gsi
+# must use Stack Trace Analysis Tool (STAT)
+export ATP_ENABLED=1
+
+echo "xxxxxxxxxxxx   Paralelismo MPI xxxxxxxxxxxxx"
+echo "Número de tasks mpi : " ${NCPUS}
+echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+cd ${runDir}
+pwd
+
+#export OMP_NUM_THREADS=\$SLURM_CPUS_PER_TASK
+
+####
+echo "HOME_GSI para carregar o env: ${home_gsi}"
+
+source ${home_gsi}/env.sh jaci ${compiler}
+
+module list
+
+echo  "STARTING AT `date` "
+
+ulimit -c unlimited
+ulimit -s unlimited
+
+export I_MPI_DEBUG=15
+
+time mpirun -np \${NCPUS} ./$(basename ${execGSI}) > gsiStdout_${andt}.${runTime}.log
+
+EOF
+
+    cd ${runDir}
+
+    PID=$(qsub -W block=true gsi.qsb; exit ${PIPESTATUS[0]})
   ;;
   XC50)
      cat << EOF > ${runDir}/gsi.qsb
