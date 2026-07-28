@@ -114,6 +114,9 @@ if [ "${machine,,}" == "egeon" ] ||  [ "${machine,,}" == "jaci" ]; then
         module swap  PrgEnv-cray/8.6.0 PrgEnv-intel/8.6.0
 	module load cray-libpals/1.6.1 cray-pals/1.6.1
 	module load cray-netcdf/4.9.0.15
+
+	# SOLUÇÃO AQUI: Aponta a variável que o GSI pede para a pasta do NetCDF da Cray -> JACI
+	export NETCDF_FORTRAN_DIR="${CRAY_NETCDF_DIR}"
         export FC=ifx
         export F90=ifx
         export CC=icx
@@ -177,6 +180,9 @@ EXGSI="/p/projetos/monan_das/${USER}/SMNA_v3.0.0.t12717/SMG/cptec/gsi"
 assign DIRGSI "${EXGSI}"
 assign DIRLIB "${DIRGSI}/libsrc"
 assign install_dir "${DIRGSI}"
+
+echo "Caminho NetCDF Cray: ${CRAY_NETCDF_DIR}"
+echo "Caminho NetCDF Fortran GSI: ${NETCDF_FORTRAN_DIR}"
 
 # Additional environment paths
 declare -A paths=(
