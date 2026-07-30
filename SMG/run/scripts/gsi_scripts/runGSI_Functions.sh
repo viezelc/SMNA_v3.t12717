@@ -341,12 +341,12 @@ linkObsNCEP ( ){
       done
 
    done
-   
+   #echo " NAME final for "$name; 
    if [ $count -eq 4 ]; then
      echo -e "\033[34;1m Found\033[m\033[32;1m ${count}\033[m\033[34;1m observation files from NCEP to use\033[m"
    else
      echo "falta dados do NCEP.. esperar e rodar novamente..." ; 
-     exit 1; 
+     #exit 1; 
    fi
 }
 
@@ -423,7 +423,7 @@ linkObsINPE ( ){
      echo -e "\033[34;1m Found\033[m\033[32;1m ${count}\033[m\033[34;1m observation files from INPE to use\033[m"
    else
      echo "falta dados do INPE.. esperar e rodar novamente..."; 
-     exit 0; 
+     #exit 0; 
    fi
 }
 
