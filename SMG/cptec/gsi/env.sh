@@ -121,6 +121,21 @@ if [ "${machine,,}" == "egeon" ] ||  [ "${machine,,}" == "jaci" ]; then
         export F90=ifx
         export CC=icx
         export CXX=icx
+
+	#module swap PrgEnv-cray/8.6.0 PrgEnv-intel/8.6.0
+	#module load cray-libpals/1.6.1 cray-pals/1.6.1
+	#module load cray-netcdf/4.9.0.15
+	
+	#export NETCDF_FORTRAN_DIR="${CRAY_NETCDF_DIR}"
+
+	# Use os wrappers da Cray
+	#export FC=ftn
+	#export F90=ftn
+	#export CC=cc
+	#export CXX=CC
+
+	# Garanta que o ftn chame o ifx (já é o padrão no PrgEnv-intel recente, mas força se necessário)
+	export CRAYPE_LINK_TYPE=dynamic
         
     # Configuration for GNU compiler
     elif [ "${compiler,,}" == "gnu" ]; then
