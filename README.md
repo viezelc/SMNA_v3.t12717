@@ -28,7 +28,7 @@ Para a compilação na egeon os seguindo os passos abaixo devem ser feito:
 3. Caso seo caso faca o checkout em um branch desejado, caso queira usar o master pule essa etapa:
    
    ```
-   git checkout SMNA_v3.0.0.beegfs;
+   git checkout SMNA_v3.0.0_beegfs;
    ```
 
 4. Depois do repositório clonado fazer o lfs pull (passo importante):
