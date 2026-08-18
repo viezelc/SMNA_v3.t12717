@@ -31,8 +31,9 @@ Para a compilação na egeon os seguindo os passos abaixo devem ser feito:
    git checkout SMNA_v3.0.0_beegfs;
    ```
 
-4. Depois do repositório clonado fazer o lfs pull (passo importante):
+4. Depois do repositório clonado fazer o lfs install e pull (passos importantes):
    ```
+   git lfs install
    git lfs pull
    ```
    
