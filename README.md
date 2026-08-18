@@ -1,4 +1,4 @@
-# Versão SMNA da branch SVN ajustada no GitHub
+# Versão SMNA para rodar na JACI via container
 
 Repositório de origem no SVN: SMNA_v3.0.0.t12717:  
 https://svn.cptec.inpe.br/smna/branch/SMNA_v3.0.0.t12717
