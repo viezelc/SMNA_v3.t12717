@@ -89,7 +89,7 @@ subwrd() {
 # Set script's local directory
 LOCALDIR=$(dirname $(readlink -e ${0})) 
 #source ${LOCALDIR}
-source /home/${USER}/SMNA_v3.0.0.t12717/SMG/cptec/bam/run/EnvironmentalVariables_Model
+source /mnt/beegfs/${USER}/SMNA_v3.0.0.beegfs/SMG/cptec/bam/run/EnvironmentalVariables_Model
 
 # Check for command-line arguments, if none, show help
 if [ $# -eq 0 ]; then

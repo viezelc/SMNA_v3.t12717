@@ -258,9 +258,9 @@ detect_hpc_system || { printf '[FATAL] detect_hpc_system failed – aborting.\n'
 ###############################################################################
 # Paths – DO NOT EDIT the 3 lines below; they are replaced by another script! #
 ###############################################################################
-export HOMEBASE="/home/${USER}/SMNA/SMG/cptec/bam"
-export SUBTBASE="/mnt/beegfs/${USER}/SMNA/SMG/datainout/bam"
-export WORKBASE="/mnt/beegfs/${USER}/SMNA/SMG/datainout/bam"
+export HOMEBASE="/mnt/beegfs/${USER}/SMNA_v3.0.0.beegfs/SMG/cptec/bam"
+export SUBTBASE="/mnt/beegfs/${USER}/SMNA_v3.0.0.beegfs/SMG/datainout/bam"
+export WORKBASE="/mnt/beegfs/${USER}/SMNA_v3.0.0.beegfs/SMG/datainout/bam"
 ###############################################################################
 
 ###############################################################################

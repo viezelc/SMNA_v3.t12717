@@ -289,7 +289,8 @@ linkObs ( ){
 #   local obsDir=/mnt/beegfs/luiz.sapucci/obs_V1.3.3/dataout/${runDate:0:8} 
 # local para ler dados salvos em experimentos   
 #   local obsDir=/pesq/dados/das/poper/luiz.sapucci/NCEPdataSMNA/PrepBufr/${runDate}
-   local obsDir=/oper/dados/dboper/raw/arch/mod/ncep/gdas/${runDate:0:4}/${runDate:4:2}/${runDate:6:2}
+#   local obsDir=/oper/dados/dboper/raw/arch/mod/ncep/gdas/${runDate:0:4}/${runDate:4:2}/${runDate:6:2}
+    local obsDir=/mnt/beegfs/luiz.sapucci/SMNA_v3.0.0.beegfs/SMG/datarun/obs/${runDate:0:8}
    
 #   local obsDir=${obsDir}:/lustre_xc50/ioper/data/external/ASSIMDADOS
 #   local obsDir=${obsDir}:/lustre_xc50/joao_gerd/data/${runDate}
@@ -505,13 +506,13 @@ getSatBias ( ){
 
    if [ ${#FileSatbiasOu} -eq 0 ];then
 
-     echo -e "\033[31;1m #--------------------------------------#\033[m"
+     echo -e "\033[31;1m #----------------------------------------#\033[m"
      echo -e "\033[31;1m #     Usando o os coeficientes de BC     #\033[m"
      echo -e "\033[31;1m #        de 50 ciclos do SMNA            #\033[m"
-     echo -e "\033[31;1m #     Caso não seja o 1° ciclo verificar  #\033[m"
-     echo -e "\033[31;1m #    porque não copiou o arquivo anterior  #\033[m"
-     echo -e "\033[31;1m #              ${satbiasOu}               #\033[m"
-     echo -e "\033[31;1m #--------------------------------------#\033[m"
+     echo -e "\033[31;1m #  Caso não seja o 1° ciclo verificar  #\033[m"
+     echo -e "\033[31;1m # porque não copiou o arquivo anterior  #\033[m"
+     echo -e "\033[31;1m #             ${satbiasOu}               #\033[m"
+     echo -e "\033[31;1m #----------------------------------------#\033[m"
 
      if [ -e ${runDir}/${satbiasIn} ];then
         #
@@ -567,13 +568,13 @@ getSatBias ( ){
 
    if [ ${#FileSatbiasPCOu} -eq 0 ];then
 
-     echo -e "\033[31;1m #--------------------------------------#\033[m"
+     echo -e "\033[31;1m #----------------------------------------#\033[m"
      echo -e "\033[31;1m #    Usando o os coeficientes de BC_PC   #\033[m"
      echo -e "\033[31;1m #        de 50 ciclos do SMNA            #\033[m"
      echo -e "\033[31;1m #  Caso não seja o 1° ciclo verificar  #\033[m"
-     echo -e "\033[31;1m #    porque não copiou o arquivo       #\033[m"
-     echo -e "\033[31;1m #          ${satbiasPCOu}         #\033[m"
-     echo -e "\033[31;1m #--------------------------------------#\033[m"
+     echo -e "\033[31;1m #    porque não copiou o arquivo        #\033[m"
+     echo -e "\033[31;1m #          ${satbiasPCOu}                #\033[m"
+     echo -e "\033[31;1m #----------------------------------------#\033[m"
 
      if [ -e ${runDir}/${satbiasPCIn} ];then
         #

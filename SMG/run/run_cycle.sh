@@ -67,7 +67,7 @@ modelFCT=09        # Time length of model forecasts
 gsiMPITasks=144    # Number of Processors used by gsi
 
 do_obsmake=0
-do_gsi=1 
+do_gsi=1
 do_bam=1
 
 i=1

@@ -88,15 +88,15 @@ fi
 
 # Caminho do BAM no HOME
 #export HOMEBASE="/home/${USER}/SMNA_v3.0.0.t11889/SMG/cptec/bam"
-export HOMEBASE="/home/${USER}/SMNA_v3.0.0.t12717/SMG/cptec/bam"
+export HOMEBASE="/mnt/beegfs/${USER}/SMNA_v3.0.0.beegfs/SMG/cptec/bam"
 
 # Caminho do BAM no scratchin (SUBMIT_HOME)
 #export SUBTBASE="/mnt/beegfs/${USER}/SMNA_v3.0.0.t11889/SMG/datainout/bam"
-export SUBTBASE="/mnt/beegfs/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam"
+export SUBTBASE="/mnt/beegfs/${USER}/SMNA_v3.0.0.beegfs/SMG/datainout/bam"
 
 # Caminho do BAM no scratchout (SUBMIT_WORK)
 #export WORKBASE="/mnt/beegfs/${USER}/SMNA_v3.0.0.t11889/SMG/datainout/bam"
-export WORKBASE="/mnt/beegfs/${USER}/SMNA_v3.0.0.t12717/SMG/datainout/bam"
+export WORKBASE="/mnt/beegfs/${USER}/SMNA_v3.0.0.beegfs/SMG/datainout/bam"
 
 # Dados Externos
 case ${hpc_name} in
