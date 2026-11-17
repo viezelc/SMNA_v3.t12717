@@ -1,0 +1,4 @@
+
+# Arquivos de compilacao Fortran e logs
+*.o
+*.log
