@@ -110,7 +110,7 @@ then
              	export NPROC=64  # ntasks
 	;;
 	jaci)  echo "setting to 64"
-             	export NPROC=64  # ntasks
+             	export NPROC=64  # ntasks - MPITasks no runModel - default = 64
 	;;
   	XC50)  	echo "setting to 480"
   		export NPROC=480             	
@@ -137,13 +137,22 @@ case ${hpc_name} in
    egeon) tasks_per_node=16
 	        cpus_per_task=8
 	;;
-   jaci) tasks_per_node=128
-	        cpus_per_task=1
+   jaci) tasks_per_node=128 # TasksPerNode no runModel - default = 128 = maximo
+	        cpus_per_task=2 # ThreadsPerMPITask no runModel - default = 1 usa apenas 64 tasks do node
 	;;
    XC50)  tasks_per_node=10
 	        cpus_per_task=4
    ;;
 esac
+
+# Na maquina JACI - ajuste para  aproveitar a maquina sem mecher na quatdd de particoes do MPI
+# OBS tasks nodes -> se cpus_per_task = 2 entao no qsub do runModel ->
+# Define que cada node vai rodar 64 processos MPI (ocupando os 128 cores do node de forma hibrida: 64 x 2)
+# TasksPerNode=64
+# CoresPerNode=128
+# MaxCoresPerNode=128
+# Define o numero de threads OpenMP por tarefa MPI (128 cores totais / 64 tarefas = 2 threads por tarefa)
+# OMP_NUM_THREADS=2
 
 getBAMSize ${TRC}
 export postfix=$(printf "G%5.5dL%3.3d \n" $JM $NLV)

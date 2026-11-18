@@ -278,8 +278,8 @@ case ${hpc_name} in
         MaxCoresPerNode=${CoresPerNode:-128}
         ;;
     jaci)
-        MPITasks=${MPITasks:-128}
-        TasksPerNode=${TasksPerNode:-128}
+        MPITasks=${MPITasks:-64} #valor default -> 64 particoes - valor utilizado e testado nos Exps
+	TasksPerNode=${TasksPerNode:-128} #valor default -> 128 tarefas (mas vai utilizar apenas 64 pois ThreadsPerMPITask default = 1) valor de mpiprocs na Jaci
         CoresPerNode=${CoresPerNode:-128}
         MaxCoresPerNode=${CoresPerNode:-128}
         ;;
@@ -296,7 +296,8 @@ case ${hpc_name} in
 esac
 
 # Set ThreadsPerMPITask to a default value if not set
-ThreadsPerMPITask=${ThreadsPerMPITask:-8}
+#ThreadsPerMPITask=${ThreadsPerMPITask:-8} # Estava com esse valor default e ao rodar o runModel sem especificar -d pode gerar problemas
+ThreadsPerMPITask=${ThreadsPerMPITask:-1} #Carol -> alterei para o default ser 1 no runModel do testcase
 
 
 # Set up the environment for the model
