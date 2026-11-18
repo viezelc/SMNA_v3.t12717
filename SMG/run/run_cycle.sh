@@ -4,24 +4,24 @@
 #-----------------------------------------------------------------------------#
 #BOP
 #
-# !SCRIPT: script utilizado para realizar os ciclos de assimilaÃ§Ã£o de dados
+# !SCRIPT: script utilizado para realizar os ciclos de assimilação de dados
 #
 # !DESCRIPTION:
 #
 # !CALLING SEQUENCE:
 #
-#   ./run_cycle.sh <opÃ§Ãµes>
+#   ./run_cycle.sh <opções>
 #
-#      As <opÃ§Ãµes> vÃ¡lidas sÃ£o
-#          * -t   <val> : truncamento das previsÃµes do BAM [default: XX]
-#          * -l   <val> : nÃºmero de nÃ­veis [default: XX]
-#          * -gt  <val> : truncamento das condiÃ§Ãµes iniciais do BAM [default: XX]
-#          * -p   <val> : prefixo dos arquivos do BAM (condiÃ§Ã£o inicial e previsÃµes) [default: CPT]
-#          * -I   <val> : Data da primeira condiÃ§Ã£o inicial do ciclo
-#          * -F   <val> : Data da Ãºtima condiÃ§Ã£o inicial do ciclo
-#          * -bc  <val> : NÃºmero de ciclo da correÃ§Ã£o de viÃ©s do satÃ©lite [default: 0]
-#          * -bcI <val> : Data inicial do primeiro ciclo de correÃ§Ã£o de viÃ©s do satÃ©lite
-#          * -bcF <val> : Data final do Ãºltimo ciclo de correÃ§Ã£o de viÃ©s do satÃ©lite
+#      As <opções> válidas são
+#          * -t   <val> : truncamento das previsões do BAM [default: XX]
+#          * -l   <val> : número de níveis [default: XX]
+#          * -gt  <val> : truncamento das condições iniciais do BAM [default: XX]
+#          * -p   <val> : prefixo dos arquivos do BAM (condição inicial e previsões) [default: CPT]
+#          * -I   <val> : Data da primeira condição inicial do ciclo
+#          * -F   <val> : Data da útima condição inicial do ciclo
+#          * -bc  <val> : Número de ciclo da correção de viés do satélite [default: 0]
+#          * -bcI <val> : Data inicial do primeiro ciclo de correção de viés do satélite
+#          * -bcF <val> : Data final do último ciclo de correção de viés do satélite
 #          * -h   <val> : Mostra este help
 #
 #          exemplo:
@@ -67,8 +67,8 @@ modelFCT=09        # Time length of model forecasts
 gsiMPITasks=144    # Number of Processors used by gsi
 
 do_obsmake=0
-do_gsi=0 
-do_bam=0
+do_gsi=1 
+do_bam=1
 
 i=1
 flag=0
@@ -114,45 +114,45 @@ done
 
 # Truncamento do background
 if [ -z ${modelTrunc} ]; then
-   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m Truncamento do modelo nÃ£o foi passado\e[m"
+   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m Truncamento do modelo nao foi passado\e[m"
    usage
    exit -1
 fi
 
 # Numero de niveis do background
 if [ -z ${modelNLevs} ]; then
-   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m NÃºmero de nÃ­veis do modelo nÃ£o foi passado\e[m"
+   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m Numero de niveis do modelo nao foi passado\e[m"
    usage
    exit -1
 fi
 
 # Prefixo do arquivo de background
 if [ -z ${modelPrefix} ]; then
-   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m Prefixo dos arquivos do modelo nÃ£o foi passado\e[m"
+   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m Prefixo dos arquivos do modelo nao foi passado\e[m"
    usage
    exit -1
 fi
 
 # Data inicial da rodada
 if [ -z ${LABELI} ]; then
-   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m A data inicial nÃ£o foi passada\e[m"
+   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m A data inicial nao foi passada\e[m"
    usage
    exit -1
 fi
 
 # Data final da rodada
 if [ -z ${LABELF} ]; then
-   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m A data Final nÃ£o foi passada\e[m"
+   echo -e "\e[31;1m >> Erro: \e[m\e[33;1m A data Final nao foi passada\e[m"
    usage
    exit -1
 fi
 
-# Truncamento em que a anÃ¡lise serÃ¡ calculada
-# Obs: Este Ã© o mesmo truncamento utilizado no
-#      cÃ¡lculo prÃ©vio da matriz de covariÃ¢ncia
-#      do erro. EntÃ£o esta serÃ¡ a resoluÃ§Ã£o em
-#      que o GSI irÃ¡ processar internamente a
-#      anÃ¡lise. Pode ser diferente do Truncamento
+# Truncamento em que a análise será calculada
+# Obs: Este é o mesmo truncamento utilizado no
+#      cálculo prévio da matriz de covariância
+#      do erro. Então esta será a resolução em
+#      que o GSI irá processar internamente a
+#      análise. Pode ser diferente do Truncamento
 #      do modelo.
 if [ -z ${gsiTrunc} ]; then
    gsiTrunc=${modelTrunc}
@@ -161,7 +161,7 @@ fi
 modelMRES=$(printf 'TQ%4.4dL%3.3d' ${modelTrunc} ${modelNLevs})
 gsiMRES=$(printf 'TQ%4.4dL%3.3d' ${gsiTrunc} ${gsiNLevs})
 
-# NÃ£o haverÃ¡ modificaÃ§Ãµes na coordenada vertical
+# Não haverá modificações na coordenada vertical
 export gsiNLevs=${modelNLevs}
 
 echo -e ""
@@ -175,25 +175,25 @@ echo -e "\033[34;1m > Tempo de Previsao   : \033[m \033[31;1m${modelFCT}\033[m"
 
 # OPCAO PARA CORRECAO DE VIES DO ANGULO DO SATELITE
 #
-# Verificar se foi chamada alguma variÃ¡vel de bc do gsi
+# Verificar se foi chamada alguma variável de bc do gsi
 # se for chamada, as outras devem estar consistentes
-# e entÃ£o deve-se realizar o BC antes das simulaÃ§Ã£o padrÃ£o
+# e então deve-se realizar o BC antes das simulação padrão
 if  [ ! -z ${BcLABELI} ] || [ ! -z ${BcLABELF} ] || [ ! -z ${BcCycles} ]; then
 
    if [ -z ${BcLABELI} ]; then
-      echo -e "\e[31;1m >> Erro: \e[m\e[33;1m A data inicial para o periodo de Correcao de Vies nÃ£o foi passado\e[m"
+      echo -e "\e[31;1m >> Erro: \e[m\e[33;1m A data inicial para o periodo de Correcao de Vies nao foi passado\e[m"
       usage
       exit -1
    fi
 
    if [ -z ${BcLABELF} ]; then
-      echo -e "\e[31;1m >> Erro: \e[m\e[33;1m A data final para o periodo de Correcao de Vies nÃ£o foi passado\e[m"
+      echo -e "\e[31;1m >> Erro: \e[m\e[33;1m A data final para o periodo de Correcao de Vies nao foi passado\e[m"
       usage
       exit -1
    fi
 
    if [ -z ${BcCycles} ]; then
-      echo -e "\e[31;1m >> Erro: \e[m\e[33;1m O numero de ciclos para Correcao de Vies nÃ£o foi passado\e[m"
+      echo -e "\e[31;1m >> Erro: \e[m\e[33;1m O numero de ciclos para Correcao de Vies nao foi passado\e[m"
       usage
       exit -1
    fi
@@ -345,7 +345,7 @@ while [ ${LABELI} -le ${LABELF} ]; do
       /bin/bash ${scripts_smg}/run_model.sh ${LABELI} ${FCT_DATE} ${modelPrefix} ${modelTrunc} ${modelNLevs} ${modelMPITasks} No
       if [ $? -ne 0 ]; then  echo -e "\033[31;1m > Falha no modelo :\033[m \033[33;1mVerifique PRE, BAM ou POS\033[m"; exit 1; fi
       
-      # Removendo o restat da rodada do modelo caso não seja a rodada das 00:00 UTC
+      # Removendo o restart da rodada do modelo caso não seja a rodada das 00:00 UTC
       
       if [ ${LABELI:9:1} -eq 0 ]   ; then   
           echo "Restart do modelo mantido por segurança"
