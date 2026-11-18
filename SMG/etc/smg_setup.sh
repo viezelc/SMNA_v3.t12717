@@ -412,7 +412,7 @@ compile(){
     fi
   fi
 
-  if [[ ${compang} -eq 0 ]]; then
+  if [[ ${compang} -eq 1 ]]; then
     echo "[INFO] Compiling GSI bias correction utility..."
 
     source ./env.sh ${hpc_name} ${compiler}
